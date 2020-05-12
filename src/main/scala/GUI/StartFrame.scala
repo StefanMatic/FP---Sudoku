@@ -52,6 +52,7 @@ class StartFrame extends MainFrame {
 
   //Listeners
   listenTo(startGame, makeNewSudokuBoard, exitGame)
+
   reactions += {
     case ButtonClicked(`startGame`) => {
       visible = false
@@ -63,6 +64,3 @@ class StartFrame extends MainFrame {
   }
 }
 
-object MySudoku extends SimpleSwingApplication{
-  override def top: Frame = new StartFrame()
-}

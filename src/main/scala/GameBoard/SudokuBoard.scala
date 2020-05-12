@@ -1,11 +1,32 @@
 package GameBoard
 
 import scala.io.Source
+import scala.swing.Frame
 
 object SudokuBoard {
   //Set sudoku board playing field
   val board  = Array.ofDim[Int](9,9)
   val fixedPositions = Array.ofDim[Boolean](9,9)
+
+  private var currentPosition: (Int, Int) = (0,0)
+
+  /**
+   * Getter for current position of player
+   * @return
+   */
+  def getCurrentPosition: (Int, Int) = {
+    currentPosition
+  }
+
+  /**
+   * Setter for current position of player
+   * @param newPosition
+   */
+  def setCurrentPosition(newPosition: (Int, Int)) = {
+    currentPosition = newPosition
+  }
+
+
 
   /**
    * Resets the sudoku board
