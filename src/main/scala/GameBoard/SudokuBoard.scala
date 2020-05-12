@@ -76,7 +76,7 @@ object SudokuBoard {
         case x :: xs =>{
           board(myRow).update(myCol, x.asDigit)
 
-          //We are remembering witch fields were pre-filled
+          //We are storing witch fields were pre-filled
           fixedPositions(myRow).update(myCol, true)
           fillOutSudokuField(xs,myRow, myCol + 1)
         }
