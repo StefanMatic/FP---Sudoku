@@ -26,8 +26,6 @@ object SudokuBoard {
     currentPosition = newPosition
   }
 
-
-
   /**
    * Resets the sudoku board
    */
@@ -88,14 +86,72 @@ object SudokuBoard {
     fillOutSudokuRows(allRows, 0)
   }
 
-  /**
-   *Displays the sudoku board
-   */
-  def showTable: String = {
-    board.map(col => col mkString(" ")).mkString("\n")
+  //------------ Movement of currentPosition by 1 step -----------------------------
+  def moveCurrentPositionUp: Unit = {
+    if (currentPosition._1 != 0)
+      currentPosition = (currentPosition._1 - 1, currentPosition._2)
   }
 
+  def moveCurrentPositionDown: Unit = {
+    if (currentPosition._1 != 8)
+      currentPosition = (currentPosition._1 + 1, currentPosition._2)
+  }
 
+  def moveCurrentPositionLeft: Unit = {
+    if (currentPosition._2 != 0)
+      currentPosition = (currentPosition._1, currentPosition._2 - 1)
+  }
+
+  def moveCurrentPositionRight: Unit = {
+    if (currentPosition._2 != 8)
+      currentPosition = (currentPosition._1, currentPosition._2 + 1)
+  }
+
+  //----------------------------------------------------------------------------
+
+  /**
+   * Inserting the given input into sudoku table
+   *
+   * @param input
+   * @return
+   */
+  def insertNumber(input: Int): Boolean = {
+    if (fixedPositions(currentPosition._1)(currentPosition._2))
+      false
+    else {
+      if (checkIfMoveCorrect(currentPosition._1, currentPosition._2, input)){
+        board(currentPosition._1).update(currentPosition._2, input)
+        true
+      }
+      else {
+        //There already exist the same number in the same row, column or square
+        false
+      }
+    }
+  }
+
+  /**
+   * After checking to see if the input value can be inserted and knowing that is not allowed
+   * this function is called to get the message why the operation wac declined
+   *
+   * @param input
+   * @return
+   */
+  def getRefusalText(input: Int): String = {
+    if (fixedPositions(currentPosition._1)(currentPosition._2))
+      "Odabrano polje pripada pocetnoj tabeli."
+    else {
+      "Vec postoji cifra - " + input + " u istom redu, koloni ili kvadratu."
+    }
+  }
+
+  /**
+   * Checking if the current move is correct
+   * @param row
+   * @param col
+   * @param inputValue
+   * @return
+   */
   def checkIfMoveCorrect(row: Int, col: Int, inputValue: Int): Boolean ={
     def checkRow: Boolean = {
       //If there exists even one field with the same value in the same row than we return false
@@ -117,12 +173,34 @@ object SudokuBoard {
 
       //All the fields can be found in an increment of 3
       val mySquare = List(helper(firstIndex), helper(secondIndex), helper(thirdIndex)).flatten
-      println(mySquare)
-
       !mySquare.exists(x => x == inputValue)
     }
 
-    checkSquare
+    //checking rows, columns and squares
+    checkSquare && checkRow && checkCol
   }
 
+  /**
+   * Checking if the player is completed with filling out the sudoku
+   * @return
+   */
+  def checkIfSudokuFinished: Boolean = {
+    def goThroughRows(row: Int): Boolean = {
+      if (row == 9) true
+      else {
+        if (board(row).exists(x=> x==0)) false
+        else
+          goThroughRows(row + 1)
+      }
+    }
+
+    goThroughRows(0)
+  }
+
+  /**
+   *Displays the sudoku board
+   */
+  def showTable: String = {
+    board.map(col => col mkString(" ")).mkString("\n")
+  }
 }

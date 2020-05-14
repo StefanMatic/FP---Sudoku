@@ -5,19 +5,19 @@ import scala.swing.event._
 import java.awt.Font
 
 import GameBoard.SudokuBoard
+import GUI.GameLookConstants
 
 class GameFrame(private val mainOwner: Frame) extends Frame {
-  val UNSELECTED_BUTTON_BACKGROUND_COLOR: Color = new Color(255, 255, 255)
-  val SELECTED_BUTTON_BACKGROUND_COLOR = new Color(190, 190, 190)
-  val SELECTED_BUTTON_AREA_BACKGROUND = new Color(225, 225, 225)
-
-  val DEFAULT_FONT = new Font("Arial", Font.BOLD, 22)
-
   val allSudokuFields  = Array.ofDim[Button](9,9)
-  val myButton = new Button("Close")
+
+  //Testiranje - izbrisati ovo
+
+  val messageOutput = new TextArea()
+  val closeButton = new Button("Close")
 
   /**
-   * creatig the sudoku table and filling it with data
+   * Creating the sudoku table and filling it with data
+   *
    * @return
    */
   def sudokuTable: GridPanel = {
@@ -67,8 +67,8 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
           }
 
         newButton.action = newButtonAction
-        newButton.background = UNSELECTED_BUTTON_BACKGROUND_COLOR
-        newButton.font = DEFAULT_FONT
+        newButton.background = GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR
+        newButton.font = GameLookConstants.DEFAULT_FONT
 
         //storing the new button in our button matrix and putting it on the grid panel
         allSudokuFields(row).update(col, newButton)
@@ -107,7 +107,11 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
     panel.border = Swing.EmptyBorder(30,30,30,30)
     panel
   }
-
+  /**
+   * Creating the number picker for the sudoku input
+   *
+   * @return
+   */
   def numberPicker: BoxPanel = {
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
@@ -116,7 +120,7 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
 
       myButton.xLayoutAlignment = 0.5f
       myButton.margin = new Insets(15, 15, 15, 15)
-      myButton.font = DEFAULT_FONT
+      myButton.font = GameLookConstants.DEFAULT_FONT
       myButton
     }
 
@@ -150,16 +154,60 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
     boxPanel.contents += numberNine
     boxPanel.contents += Swing.VStrut(10)
 
-    boxPanel.border = Swing.EmptyBorder(30,30,30,30)
+    //the method call for EmptyBorder - Swing.EmptyBorder(top, left, bottom, right)
+    boxPanel.border = Swing.EmptyBorder(30,15,30,30)
 
     //handlers
     listenTo(numberOne, numberTwo, numberThree, numberFour, numberFive, numberSix, numberSeven, numberEight, numberNine)
 
-    /*
     reactions += {
-      case ButtonClicked(`numberOne`) =>
+      case ButtonClicked(`numberOne`) => inputNumber(1)
+      case ButtonClicked(`numberTwo`) => inputNumber(2)
+      case ButtonClicked(`numberThree`) => inputNumber(3)
+      case ButtonClicked(`numberFour`) => inputNumber(4)
+      case ButtonClicked(`numberFive`) => inputNumber(5)
+      case ButtonClicked(`numberSix`) => inputNumber(6)
+      case ButtonClicked(`numberSeven`) => inputNumber(7)
+      case ButtonClicked(`numberEight`) => inputNumber(8)
+      case ButtonClicked(`numberNine`) => inputNumber(9)
     }
-    */
+
+    boxPanel
+  }
+
+  /**
+   * Creating the message board and close button for return to the starting window
+   *
+   * @return
+   */
+  def messageOutputAndExit : BoxPanel = {
+    val boxPanel = new BoxPanel(Orientation.Horizontal)
+
+    //setting up the visual of the exit button and message output
+    closeButton.margin = new Insets(15, 15, 15, 15)
+    closeButton.font = GameLookConstants.DEFAULT_FONT
+    closeButton.yLayoutAlignment = 0.5f
+
+    messageOutput.rows = 5
+    messageOutput.columns = 20
+    messageOutput.font = GameLookConstants.TEXT_FONT
+    messageOutput.editable = false
+    messageOutput.lineWrap = true
+
+    boxPanel.contents += new ScrollPane(messageOutput)
+    boxPanel.contents += Swing.HStrut(10)
+    boxPanel.contents += closeButton
+
+    boxPanel.border = Swing.EmptyBorder(15,30,30,30)
+
+    //----------------- Action handlers ------------------------
+    listenTo(closeButton)
+    reactions += {
+      case ButtonClicked(`closeButton`) => {
+        mainOwner.visible = true
+        dispose()
+      }
+    }
 
     boxPanel
   }
@@ -170,26 +218,26 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
   val mainPanel = new BorderPanel(){
     add(sudokuTable, BorderPanel.Position.Center)
     add(numberPicker, BorderPanel.Position.East)
-    add(myButton, BorderPanel.Position.South)
+    add(messageOutputAndExit, BorderPanel.Position.South)
   }
 
   contents = mainPanel
-
-  //action handlers
-  listenTo(myButton)
-  reactions += {
-    case ButtonClicked(`myButton`) => {
-      mainOwner.visible = true
-      dispose()
-    }
-  }
 
   //last attribute touch-up
   visible = true
   resizable = true
   peer.setLocationRelativeTo(null)
+  size = new Dimension(800, 900)
   positionChange(0,0)
 
+  //------------------------------ Actions ---------------------------------
+
+  /**
+   * Changing the sudoku table in real time in response to user movement on the sudoku field
+   *
+   * @param row
+   * @param col
+   */
   def positionChange (row: Int, col: Int) = {
     val lastPosition: (Int, Int) = SudokuBoard.getCurrentPosition
 
@@ -213,17 +261,37 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
         }
       }
 
-      changeColor(lastPosition._1, lastPosition._2, UNSELECTED_BUTTON_BACKGROUND_COLOR)
-      changeColorOfBox((lastPosition._1 / 3) * 3 + lastPosition._2 / 3, UNSELECTED_BUTTON_BACKGROUND_COLOR)
+      changeColor(lastPosition._1, lastPosition._2, GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR)
+      changeColorOfBox((lastPosition._1 / 3) * 3 + lastPosition._2 / 3, GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR)
 
-      changeColor(row, col, SELECTED_BUTTON_AREA_BACKGROUND)
-      changeColorOfBox((row/3) * 3 + col / 3, SELECTED_BUTTON_AREA_BACKGROUND)
+      changeColor(row, col, GameLookConstants.SELECTED_BUTTON_AREA_BACKGROUND)
+      changeColorOfBox((row/3) * 3 + col / 3, GameLookConstants.SELECTED_BUTTON_AREA_BACKGROUND)
 
-      allSudokuFields(row)(col).background = SELECTED_BUTTON_BACKGROUND_COLOR
+      allSudokuFields(row)(col).background = GameLookConstants.SELECTED_BUTTON_BACKGROUND_COLOR
     }
 
     setBoardColors
     SudokuBoard.setCurrentPosition((row, col))
   }
 
+  /**
+   *
+   *
+   * @param input
+   */
+  def inputNumber(input: Int) = {
+    if (SudokuBoard.insertNumber(input)) {
+      val currentPosition: (Int, Int) = SudokuBoard.getCurrentPosition
+
+      //Changing the new input field
+      allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(input.toString) {
+        override def apply(): Unit = positionChange(currentPosition._1, currentPosition._2)
+      }
+
+      //TODO: Proveri da li je kraj igre i napravi novi prozor za proslavu
+    }
+    else {
+      messageOutput.append(SudokuBoard.getRefusalText(input) + '\n')
+    }
+  }
 }
