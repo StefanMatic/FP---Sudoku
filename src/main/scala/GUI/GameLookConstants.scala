@@ -10,4 +10,11 @@ object GameLookConstants {
 
   val DEFAULT_FONT = new Font("Arial", Font.BOLD, 22)
   val TEXT_FONT = new Font("Arial", Font.PLAIN, 18)
+  val NUMBERS_FONT = new Font("Arial", Font.PLAIN, 16)
+
+  val CODE_OK = 0
+  val CODE_WARNING = 1
+  val CODE_ERROR = 2
+
+
 }

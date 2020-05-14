@@ -1,6 +1,7 @@
 package GameBoard
 
 import scala.io.Source
+import GUI.GameLookConstants
 import scala.swing.Frame
 
 object SudokuBoard {
@@ -115,21 +116,42 @@ object SudokuBoard {
    * @param input
    * @return
    */
-  def insertNumber(input: Int): Boolean = {
-    if (fixedPositions(currentPosition._1)(currentPosition._2))
-      false
+  def insertNumber(input: Int): Int = {
+    //Checking to see if the user inputs the same number as it already is on the sudoku board
+    if (board(currentPosition._1)(currentPosition._2) == input){
+      GameLookConstants.CODE_OK
+    }
     else {
-      if (checkIfMoveCorrect(currentPosition._1, currentPosition._2, input)){
-        board(currentPosition._1).update(currentPosition._2, input)
-        true
-      }
+      if (fixedPositions(currentPosition._1)(currentPosition._2))
+      //Nothing happens because it is not allowed to changed fixed numbers
+      GameLookConstants.CODE_ERROR
       else {
-        //There already exist the same number in the same row, column or square
-        false
+        //Updating the sudoku board and checking if the operation was valid
+        //this order of calls must be held
+
+        val checkForMoveValidation = checkIfMoveCorrect(currentPosition._1, currentPosition._2, input)
+        board(currentPosition._1).update(currentPosition._2, input)
+        if (checkForMoveValidation) {
+          GameLookConstants.CODE_OK
+        } else
+          GameLookConstants.CODE_WARNING
       }
     }
   }
 
+  /**
+   * Emptying out a selected field if it is not from the original sudoku board
+   *
+   * @return
+   */
+  def eraseNumberFromBoard: Int = {
+    if (fixedPositions(currentPosition._1)(currentPosition._2))
+      GameLookConstants.CODE_ERROR
+    else{
+      board(currentPosition._1).update(currentPosition._2, 0)
+      GameLookConstants.CODE_OK
+    }
+  }
   /**
    * After checking to see if the input value can be inserted and knowing that is not allowed
    * this function is called to get the message why the operation wac declined
@@ -140,9 +162,8 @@ object SudokuBoard {
   def getRefusalText(input: Int): String = {
     if (fixedPositions(currentPosition._1)(currentPosition._2))
       "Odabrano polje pripada pocetnoj tabeli."
-    else {
-      "Vec postoji cifra - " + input + " u istom redu, koloni ili kvadratu."
-    }
+    else
+      "Vec postoji cifra " + input + " u istom redu, koloni ili kvadratu."
   }
 
   /**

@@ -120,7 +120,7 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
 
       myButton.xLayoutAlignment = 0.5f
       myButton.margin = new Insets(15, 15, 15, 15)
-      myButton.font = GameLookConstants.DEFAULT_FONT
+      myButton.font = GameLookConstants.NUMBERS_FONT
       myButton
     }
 
@@ -133,7 +133,9 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
     val numberSeven: Button = makeNumberPickers("7")
     val numberEight: Button = makeNumberPickers("8")
     val numberNine: Button = makeNumberPickers("9")
+    val erase: Button = makeNumberPickers("  ")
 
+    boxPanel.contents += erase
     boxPanel.contents += Swing.VStrut(10)
     boxPanel.contents += numberOne
     boxPanel.contents += Swing.VStrut(10)
@@ -158,7 +160,7 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
     boxPanel.border = Swing.EmptyBorder(30,15,30,30)
 
     //handlers
-    listenTo(numberOne, numberTwo, numberThree, numberFour, numberFive, numberSix, numberSeven, numberEight, numberNine)
+    listenTo(numberOne, numberTwo, numberThree, numberFour, numberFive, numberSix, numberSeven, numberEight, numberNine, erase)
 
     reactions += {
       case ButtonClicked(`numberOne`) => inputNumber(1)
@@ -170,6 +172,7 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
       case ButtonClicked(`numberSeven`) => inputNumber(7)
       case ButtonClicked(`numberEight`) => inputNumber(8)
       case ButtonClicked(`numberNine`) => inputNumber(9)
+      case ButtonClicked(`erase`) => eraseNumber
     }
 
     boxPanel
@@ -280,7 +283,9 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
    * @param input
    */
   def inputNumber(input: Int) = {
-    if (SudokuBoard.insertNumber(input)) {
+    val insertNumOnBoardValidation = SudokuBoard.insertNumber(input)
+
+    if (insertNumOnBoardValidation != GameLookConstants.CODE_ERROR) {
       val currentPosition: (Int, Int) = SudokuBoard.getCurrentPosition
 
       //Changing the new input field
@@ -290,8 +295,24 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
 
       //TODO: Proveri da li je kraj igre i napravi novi prozor za proslavu
     }
-    else {
+
+    if (insertNumOnBoardValidation != GameLookConstants.CODE_OK){
       messageOutput.append(SudokuBoard.getRefusalText(input) + '\n')
+    }
+  }
+
+  def eraseNumber: Unit = {
+    val eraseNumberValidation = SudokuBoard.eraseNumberFromBoard
+    if (eraseNumberValidation == GameLookConstants.CODE_OK) {
+      val currentPosition: (Int, Int) = SudokuBoard.getCurrentPosition
+
+      //Changing the new input field
+      allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(" ") {
+        override def apply(): Unit = positionChange(currentPosition._1, currentPosition._2)
+      }
+    }
+    else {
+      messageOutput.append("Odabrano polje pripada pocetnoj tabeli." + '\n')
     }
   }
 }
