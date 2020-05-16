@@ -39,7 +39,6 @@ class StartFrame extends MainFrame {
   boxPanel.contents += Swing.VStrut(20)
   boxPanel.contents += exitGame
 
-  //boxPanel.background = new Color(16, 59, 27)
   boxPanel.border = Swing.EmptyBorder(150, 100, 150, 100)
   boxPanel.xLayoutAlignment = 0.5f
   contents = boxPanel
@@ -57,8 +56,9 @@ class StartFrame extends MainFrame {
     case ButtonClicked(`startGame`) => {
       visible = false
       //TODO: Ovo bi trebalo da se radi u zasebnom frejmu ali neka za sada ostane dok se ne sredi sve
-      SudokuBoard.readFromFile("src/SudokuBoardExamples/Easy.txt")
-      new GameFrame(this)
+      //SudokuBoard.readFromFile("src/SudokuBoardExamples/Easy.txt")
+      //new GameFrame(this)
+      new SudokuPicker(this)
     }
     case ButtonClicked(`exitGame`) => sys.exit(0)
   }
