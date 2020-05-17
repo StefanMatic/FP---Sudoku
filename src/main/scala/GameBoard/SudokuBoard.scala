@@ -292,6 +292,56 @@ object SudokuBoard {
     goThroughRows(lines)
   }
 
+  def solveSudoku: Unit = {
+    def checkIfNumberPossibleAtPosition(row: Int, col: Int, number: Int): Boolean = {
+      /**
+       * Check to see if there is another field with the same number in the same row
+       *
+       * @return
+       */
+      def checkRow: Boolean = {
+        !board(row).exists(x => x == number)
+      }
+      /**
+       * Check to see if there is another field with the same number in the same column
+       *
+       * @return
+       */
+      def checkCol: Boolean = {
+        val transBoard = board.transpose
+        !transBoard(col).exists(x => x == number)
+      }
+      def checkSquare: Boolean = {
+        !getAllFieldsFromSquare(row, col).exists(x => x == number)
+      }
+
+      checkRow && checkCol && checkSquare
+    }
+
+    def doSomething(row: Int, col: Int): Unit = {
+      for (possible <- 1 to 9) {
+        if (checkIfNumberPossibleAtPosition(row, col, possible)) {
+          println("(" + row + ", " + col + ") => " + possible)
+          board(row).update(col, possible)
+          solve
+        }
+      }
+    }
+
+      def solve: Unit = {
+        for (r <- 0 to 8; c <- 0 to 8 if (board(r)(c) == 0)) {
+          doSomething(r, c)
+          if (!checkIfSudokuFinished) {
+            //the previous try wasn't good so we return the field to 0
+            board(r).update(c, 0)
+          }
+        }
+      }
+
+    solve
+    println(showTable)
+  }
+
   //-------------------------------- GUI Actions -------------------------------
 
   /**

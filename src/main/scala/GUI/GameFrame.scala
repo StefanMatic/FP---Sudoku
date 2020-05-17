@@ -222,7 +222,8 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
           dispose()
         }
         case ButtonClicked(`readInstructions`) => {
-          SudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
+          SudokuBoard.solveSudoku
+          //SudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
         }
       }
 
