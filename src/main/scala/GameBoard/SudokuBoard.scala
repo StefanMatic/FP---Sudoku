@@ -3,6 +3,7 @@ package GameBoard
 import scala.io.Source
 import GUI.GameLookConstants
 import GUI.GameFrame
+import scala.language.postfixOps
 
 import scala.swing.{Action, Color, Frame}
 
@@ -292,8 +293,15 @@ object SudokuBoard {
     goThroughRows(lines)
   }
 
+  /**
+   * Solves the current sudoku board
+   */
   def solveSudoku: Unit = {
-    def checkIfNumberPossibleAtPosition(row: Int, col: Int, number: Int): Boolean = {
+    //--------------------------------------------------------------------
+    /*
+    ----Backtracking works, but it's not good were there are a lot of different options for one field------
+
+        def checkIfNumberPossibleAtPosition(row: Int, col: Int, number: Int): Boolean = {
       /**
        * Check to see if there is another field with the same number in the same row
        *
@@ -318,28 +326,122 @@ object SudokuBoard {
       checkRow && checkCol && checkSquare
     }
 
+
     def doSomething(row: Int, col: Int): Unit = {
       for (possible <- 1 to 9) {
         if (checkIfNumberPossibleAtPosition(row, col, possible)) {
-          println("(" + row + ", " + col + ") => " + possible)
+          //println("(" + row + ", " + col + ") => " + possible)
           board(row).update(col, possible)
           solve
         }
       }
     }
 
-      def solve: Unit = {
-        for (r <- 0 to 8; c <- 0 to 8 if (board(r)(c) == 0)) {
-          doSomething(r, c)
-          if (!checkIfSudokuFinished) {
-            //the previous try wasn't good so we return the field to 0
-            board(r).update(c, 0)
-          }
+    def solve: Unit = {
+      for (r <- 0 to 8; c <- 0 to 8 if (board(r)(c) == 0)) {
+        doSomething(r, c)
+        if (!checkIfSudokuFinished) {
+          //the previous try wasn't good so we return the field to 0
+          board(r).update(c, 0)
         }
       }
+    }
 
     solve
     println(showTable)
+
+    */
+
+    /**
+     * Looks at the square of the current field and checks if there are any duplicates of numbers
+     *
+     * @param row
+     * @param col
+     * @param number
+     * @return
+     */
+    def checkSquare(row: Int, col: Int, number: Int): Boolean = {
+      !getAllFieldsFromSquare(row, col).exists(x => x == number)
+    }
+    /**
+     * Getting all the rows in witch the requested number doesn't appear
+     *
+     * @param table
+     * @param number
+     * @return
+     */
+    def getAllRowsWithoutNumber(table: Array[Array[Int]], number: Int): List[Int] = {
+      val allUnusedRows =
+        for (row <- 0 to 8 if (!table(row).exists(x => x == number)))
+          yield row
+
+      allUnusedRows.toList
+    }
+    /**
+     * Getting all the possible fields on the board for a requested number. This function checks if all the fields
+     * don't already have the same number in the same row, column or sub-square
+     *
+     * @param number
+     * @return
+     */
+    def getAllPossibleFieldsForNumber(number: Int): List[(Int, Int)] = {
+      val allRows = getAllRowsWithoutNumber(board, number)
+      val allCols = getAllRowsWithoutNumber(board.transpose, number)
+
+      val allPossibleFields =
+        for (rows <- allRows; cols <- allCols if (checkSquare(rows, cols, number) &&  board(rows)(cols) == 0))
+          yield (rows, cols)
+
+      allPossibleFields.toList
+    }
+    /**
+     *  Try to solve the sudoku board
+     */
+    def findResults: Unit = {
+      /**
+       * Looks at all the possibilities and tries to find a certain field to fill. If a certain move can be made
+       * than this function returns true, otherwise returns false
+       *
+       * @param possibilities
+       * @param currentNumber
+       * @return
+       */
+      def checkIfNumberCanBeUsed (possibilities: List[(Int, Int)], currentNumber: Int): Boolean = {
+        def goThroughAllEntries(possibilities: List[(Int, Int)]):Boolean = {
+          if (possibilities.length == 1) {
+            //TODO: pisi ili u listu ili direktno u neki dokument
+            println(currentNumber + " - (" + possibilities.head._1 +", " + possibilities.head._2 + ")")
+            //After we found a certain move, me make the adjustments to the board
+            setCurrentPosition(possibilities.head._1, possibilities.head._2)
+            inputNumber(currentNumber + 1)
+            true
+          } else
+            false
+        }
+
+        //HashMap for all the possible fields for the current number
+        val hashMapPossibilities = possibilities groupBy (x => x._1)
+        hashMapPossibilities.exists(x => goThroughAllEntries(x._2))
+      }
+
+      //Getting all the possibilities for all the numbers and storing them in an array
+      val allPossibilitiesForAllNumbers =
+        (for (number <- 1 to 9)
+          yield getAllPossibleFieldsForNumber(number)) zipWithIndex
+
+      //try to find even one new move
+      val validationForTurn: Boolean = allPossibilitiesForAllNumbers.exists(x => checkIfNumberCanBeUsed(x._1, x._2))
+
+      if (checkIfSudokuFinished){
+        println("Done")
+      } else if (validationForTurn){
+        findResults
+      } else {
+        println("Cannot be solved")
+      }
+    }
+
+    findResults
   }
 
   //-------------------------------- GUI Actions -------------------------------
