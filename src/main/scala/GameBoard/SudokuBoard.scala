@@ -1,10 +1,13 @@
 package GameBoard
 
-import scala.io.Source
+import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
+
+import scala.io.{Codec, Source}
 import GUI.GameLookConstants
 import GUI.GameFrame
-import scala.language.postfixOps
 
+import scala.collection.mutable.ListBuffer
+import scala.language.postfixOps
 import scala.swing.{Action, Color, Frame}
 
 object SudokuBoard {
@@ -67,6 +70,7 @@ object SudokuBoard {
     bufferedSource.close
 
     //TODO: izbaciti ovaj poziv metode kako bi mogla ova metoda da bude modularna
+    //TODO: i doradi isto to u metodi za citanje instrukcija iz nekog fajla
     fillOutSudoku(lines)
   }
 
@@ -242,6 +246,12 @@ object SudokuBoard {
 
   //-------------------------------- Actions -----------------------------------
 
+  /**
+   * Reads instructions that are implemented to the sudoku board. The instructions are taken from a defined
+   * file path
+   *
+   * @param path
+   */
   def readInstructionsFromFile(path: String) = {
     //Ovaj deo moze da se zameni sa gornjom funcijom za citanje iz fajla kada ude modularna
     val bufferedSource = Source.fromFile(path)
@@ -297,7 +307,6 @@ object SudokuBoard {
    * Solves the current sudoku board
    */
   def solveSudoku: Unit = {
-    //--------------------------------------------------------------------
     /*
     ----Backtracking works, but it's not good were there are a lot of different options for one field------
 
@@ -351,6 +360,8 @@ object SudokuBoard {
     println(showTable)
 
     */
+    //Saving all the turns necessary to finish the sudoku
+    var allTurns = new ListBuffer[String]()
 
     /**
      * Looks at the square of the current field and checks if there are any duplicates of numbers
@@ -409,11 +420,16 @@ object SudokuBoard {
       def checkIfNumberCanBeUsed (possibilities: List[(Int, Int)], currentNumber: Int): Boolean = {
         def goThroughAllEntries(possibilities: List[(Int, Int)]):Boolean = {
           if (possibilities.length == 1) {
-            //TODO: pisi ili u listu ili direktno u neki dokument
-            println(currentNumber + " - (" + possibilities.head._1 +", " + possibilities.head._2 + ")")
             //After we found a certain move, me make the adjustments to the board
             setCurrentPosition(possibilities.head._1, possibilities.head._2)
             inputNumber(currentNumber + 1)
+
+            //Writing in the new number
+            board(possibilities.head._1).update(possibilities.head._2, currentNumber + 1)
+            //Writing the result into the file
+            allTurns += ((currentNumber + 1) + " - (" + possibilities.head._1 +", " + possibilities.head._2 + ")")
+
+            //return true because we made adjustments on the board
             true
           } else
             false
@@ -432,14 +448,19 @@ object SudokuBoard {
       //try to find even one new move
       val validationForTurn: Boolean = allPossibilitiesForAllNumbers.exists(x => checkIfNumberCanBeUsed(x._1, x._2))
 
-      if (checkIfSudokuFinished){
-        println("Done")
-      } else if (validationForTurn){
+      if (checkIfSudokuFinished || !validationForTurn){
+        //opening a file to write thw results in
+        val file = new File("src/SudokuSolved/Solved.txt")
+        val bw = new BufferedWriter(new FileWriter(file))
+
+        for (line <- allTurns.toList)
+          bw.write(line + '\n')
+
+        //close the file writer and return
+        bw.close()
+      } else
         findResults
-      } else {
-        println("Cannot be solved")
       }
-    }
 
     findResults
   }
