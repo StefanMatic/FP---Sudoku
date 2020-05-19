@@ -1,10 +1,7 @@
 package GUI
 
-
 import scala.swing._
 import scala.swing.event.ButtonClicked
-import GUI.GameFrame
-import GameBoard.SudokuBoard
 
 class StartFrame extends MainFrame {
   def makeButtons(name: String): Button = {
@@ -12,14 +9,19 @@ class StartFrame extends MainFrame {
 
     myButton.xLayoutAlignment = 0.5f
     myButton.margin = new Insets(15, 15, 15, 15)
+    myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
+    myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
+    myButton.font = GameLookConstants.MENU_BUTTON_FONT
     myButton
   }
 
   title = "SUDOKU"
 
-  //Creating label that is header of application
+  //Creating menu title
   val header: Label = new Label("S U D O K U")
   header.xLayoutAlignment = 0.5f
+  header.foreground = GameLookConstants.MENU_TITLE
+  header.font = GameLookConstants.MENU_TITLE_FONT
 
   //Creating the buttons of the start menu
   val startGame = makeButtons("New Game")
@@ -41,13 +43,14 @@ class StartFrame extends MainFrame {
 
   boxPanel.border = Swing.EmptyBorder(150, 100, 150, 100)
   boxPanel.xLayoutAlignment = 0.5f
+  boxPanel.background = GameLookConstants.GAME_BACKGROUND
+
   contents = boxPanel
 
-  size = new Dimension(400, 600)
+  size = new Dimension(500, 700)
   resizable = true
   //centering the window to middle of screen
   peer.setLocationRelativeTo(null)
-
 
   //Listeners
   listenTo(startGame, makeNewSudokuBoard, exitGame)
@@ -55,9 +58,6 @@ class StartFrame extends MainFrame {
   reactions += {
     case ButtonClicked(`startGame`) => {
       visible = false
-      //TODO: Ovo bi trebalo da se radi u zasebnom frejmu ali neka za sada ostane dok se ne sredi sve
-      //SudokuBoard.readFromFile("src/SudokuBoardExamples/Easy.txt")
-      //new GameFrame(this)
       new SudokuPicker(this)
     }
     case ButtonClicked(`exitGame`) => sys.exit(0)

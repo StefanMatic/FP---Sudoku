@@ -9,13 +9,15 @@ class SudokuPicker(private val mainOwner: Frame) extends Frame {
   val boxPanel = new BoxPanel(Orientation.Vertical)
 
   //making the subject of the frame for better user experience
-  val subjectSudokuPicker = new Label("Select table")
-  subjectSudokuPicker.font = GameLookConstants.DEFAULT_FONT
+  val subjectSudokuPicker = new Label("SELECT TABLE")
+  subjectSudokuPicker.font = GameLookConstants.MENU_TITLE_FONT
+  subjectSudokuPicker.foreground = GameLookConstants.MENU_TITLE
   subjectSudokuPicker.xLayoutAlignment = 0.5f
 
   //adding the subject to main boxPanel with a weider gap in between
   boxPanel.contents += subjectSudokuPicker
-  boxPanel.contents += Swing.VStrut(30)
+  boxPanel.contents += Swing.VStrut(50)
+  boxPanel.contents += Swing.Glue
 
   private def makeSudokuPickButtons = {
     //getting all the .txt files
@@ -25,7 +27,9 @@ class SudokuPicker(private val mainOwner: Frame) extends Frame {
 
       newButton.xLayoutAlignment = 0.5f
       newButton.margin = new Insets(15, 15, 15, 15)
-      newButton.font = GameLookConstants.NUMBERS_FONT
+      newButton.font = GameLookConstants.MENU_BUTTON_FONT
+      newButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
+      newButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
       newButton.action = new Action(f.getName.substring(0, f.getName.indexOf("."))) {
         override def apply(): Unit = {
           visible = false
@@ -34,12 +38,13 @@ class SudokuPicker(private val mainOwner: Frame) extends Frame {
         }
       }
 
-      boxPanel.contents += Swing.VStrut(10)
+      boxPanel.contents += Swing.VStrut(20)
       boxPanel.contents += newButton
     }
   }
 
   makeSudokuPickButtons
+  boxPanel.background = GameLookConstants.GAME_BACKGROUND
   boxPanel.border = Swing.EmptyBorder(150, 100, 150, 100)
   boxPanel.xLayoutAlignment = 0.5f
 
@@ -47,6 +52,7 @@ class SudokuPicker(private val mainOwner: Frame) extends Frame {
 
   contents = boxPanel
 
+  size = new Dimension(500, 700)
   resizable = true
   peer.setLocationRelativeTo(null)
   visible = true

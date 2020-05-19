@@ -13,8 +13,6 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
   //Testiranje - izbrisati ovo
 
   val messageOutput = new TextArea()
-  val closeButton = new Button("Close")
-  val readInstructions = new Button("Load")
 
   /**
    * Creating the sudoku table and filling it with data
@@ -108,6 +106,7 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
     panel.contents += grid8
 
     panel.border = Swing.EmptyBorder(30,30,30,30)
+    panel.background = GameLookConstants.GAME_BACKGROUND
     panel.focusable = true
     panel.requestFocus()
 
@@ -138,6 +137,8 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
       myButton.xLayoutAlignment = 0.5f
       myButton.margin = new Insets(15, 15, 15, 15)
       myButton.font = GameLookConstants.NUMBERS_FONT
+      myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
+      myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
       myButton
     }
 
@@ -175,6 +176,7 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
 
     //the method call for EmptyBorder - Swing.EmptyBorder(top, left, bottom, right)
     boxPanel.border = Swing.EmptyBorder(30,15,30,30)
+    boxPanel.background = GameLookConstants.GAME_BACKGROUND
 
     //button handlers
     listenTo(numberOne, numberTwo, numberThree, numberFour, numberFive, numberSix, numberSeven, numberEight, numberNine, erase)
@@ -202,42 +204,28 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
    * @return
    */
   def messageOutputAndExit : BoxPanel = {
-    def buttonFunctions: BoxPanel = {
-      val boxP = new BoxPanel(Orientation.Vertical)
+    def makeFunctionNumber(name: String): Button = {
+      val myButton = new Button(name)
 
-      //setting up the visual of the load button
-      readInstructions.margin = new Insets(15, 15, 15, 15)
-      readInstructions.font = GameLookConstants.DEFAULT_FONT
-      readInstructions.yLayoutAlignment = 0.5f
-
-      //setting up the visual of the exit button
-      closeButton.margin = new Insets(15, 15, 15, 15)
-      closeButton.font = GameLookConstants.DEFAULT_FONT
-      closeButton.yLayoutAlignment = 0.5f
-
-      listenTo(closeButton, readInstructions)
-      reactions += {
-        case ButtonClicked(`closeButton`) => {
-          mainOwner.visible = true
-          dispose()
-        }
-        case ButtonClicked(`readInstructions`) => {
-          SudokuBoard.solveSudoku
-          //SudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
-        }
-      }
-
-      boxP.yLayoutAlignment = 0.5f
-      boxP.xLayoutAlignment = 0.5f
-
-      boxP.contents += readInstructions
-      boxP.contents += Swing.VStrut(10)
-      boxP.contents += closeButton
-
-      boxP
+      myButton.xLayoutAlignment = 0.5f
+      myButton.margin = new Insets(15, 15, 15, 15)
+      myButton.font = GameLookConstants.NUMBERS_FONT
+      myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
+      myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
+      myButton
     }
 
     val boxPanel = new BoxPanel(Orientation.Horizontal)
+
+    val closeButton = makeFunctionNumber("Close")
+
+    listenTo(closeButton)
+    reactions += {
+      case ButtonClicked(`closeButton`) => {
+        mainOwner.visible = true
+        dispose()
+      }
+    }
 
     messageOutput.rows = 5
     messageOutput.columns = 20
@@ -247,9 +235,53 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
 
     boxPanel.contents += new ScrollPane(messageOutput)
     boxPanel.contents += Swing.HStrut(10)
-    boxPanel.contents += buttonFunctions
+    boxPanel.contents += closeButton
 
     boxPanel.border = Swing.EmptyBorder(15,30,30,30)
+    boxPanel.background = GameLookConstants.GAME_BACKGROUND
+
+    boxPanel
+  }
+  /**
+   * Creating the functions panel on the left of the sudoku board
+   *
+   * @return
+   */
+  def functionsPanel: BoxPanel = {
+    def makeFunctionNumber(name: String): Button = {
+      val myButton = new Button(name)
+
+      myButton.xLayoutAlignment = 0.5f
+      myButton.yLayoutAlignment = 0.5f
+      myButton.margin = new Insets(15, 15, 15, 15)
+      myButton.font = GameLookConstants.NUMBERS_FONT
+      myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
+      myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
+      myButton
+    }
+    val boxPanel = new BoxPanel(Orientation.Vertical)
+
+    val readInstructions = makeFunctionNumber("Instructions")
+    val solveSudoku = makeFunctionNumber("Solve")
+
+    boxPanel.contents += Swing.VStrut(10)
+    boxPanel.contents += readInstructions
+    boxPanel.contents += Swing.VStrut(10)
+    boxPanel.contents += solveSudoku
+    boxPanel.contents += Swing.VStrut(10)
+
+    listenTo(readInstructions, solveSudoku)
+    reactions += {
+      case ButtonClicked(`readInstructions`) => {
+        SudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
+      }
+      case ButtonClicked(`solveSudoku`) => {
+        SudokuBoard.solveSudoku
+      }
+    }
+
+    boxPanel.border = Swing.EmptyBorder(300,30,30,15)
+    boxPanel.background = GameLookConstants.GAME_BACKGROUND
 
     boxPanel
   }
@@ -261,11 +293,13 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
     add(sudokuTable, BorderPanel.Position.Center)
     add(numberPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
+    add(functionsPanel, BorderPanel.Position.West)
   }
 
   listenTo(mainPanel.keys)
   mainPanel.focusable = true
   mainPanel.requestFocus()
+  mainPanel.background = GameLookConstants.GAME_BACKGROUND
 
   contents = mainPanel
   SudokuBoard.setGameFrameTable(this)
@@ -274,5 +308,5 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
   visible = true
   resizable = true
   peer.setLocationRelativeTo(null)
-  size = new Dimension(800, 900)
+  size = new Dimension(1000, 900)
 }
