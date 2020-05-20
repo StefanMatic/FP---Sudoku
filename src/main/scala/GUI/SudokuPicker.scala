@@ -33,7 +33,7 @@ class SudokuPicker(private val mainOwner: Frame) extends Frame {
       newButton.action = new Action(f.getName.substring(0, f.getName.indexOf("."))) {
         override def apply(): Unit = {
           visible = false
-          SudokuBoard.readFromFile("src/SudokuBoardExamples/" + f.getName)
+          SudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
           new GameFrame(mainOwner)
         }
       }

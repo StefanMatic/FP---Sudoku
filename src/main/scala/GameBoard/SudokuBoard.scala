@@ -61,16 +61,22 @@ object SudokuBoard {
    *
    * @param path
    */
-  def readFromFile(path: String): Unit = {
+  def readFromFile(path: String): List[String] = {
     val bufferedSource = Source.fromFile(path)
     val lines = bufferedSource.getLines().toList
-
     //closing the opened .txt file
     bufferedSource.close
 
-    //TODO: izbaciti ovaj poziv metode kako bi mogla ova metoda da bude modularna
-    //TODO: i doradi isto to u metodi za citanje instrukcija iz nekog fajla
-    fillOutSudoku(lines)
+    lines
+  }
+
+  /**
+   * Files out the sudoku from a file
+   *
+   * @param path
+   */
+  def fillSudoku(path: String): Unit = {
+    fillOutSudoku(readFromFile(path))
   }
 
   /**
@@ -250,14 +256,6 @@ object SudokuBoard {
    * @param path
    */
   def readInstructionsFromFile(path: String) = {
-    //Ovaj deo moze da se zameni sa gornjom funcijom za citanje iz fajla kada ude modularna
-    val bufferedSource = Source.fromFile(path)
-    val lines = bufferedSource.getLines().toList
-
-    //closing the opened .txt file
-    bufferedSource.close
-    //------------------ nastavak------------------
-
     def goThroughRows(allMyRows: List[String]): Unit = {
       allMyRows match {
         case x :: xs => {
@@ -269,7 +267,6 @@ object SudokuBoard {
         case Nil => println("End of table")
       }
     }
-
     def goThroughChars(fieldValues: List[Char]): Unit ={
       fieldValues match {
         case x :: xs if (x == 'd') => {
@@ -297,7 +294,7 @@ object SudokuBoard {
     }
 
     //Calling the method goThroughRows to start the process of reading the lines
-    goThroughRows(lines)
+    goThroughRows(readFromFile(path))
   }
 
   /**
