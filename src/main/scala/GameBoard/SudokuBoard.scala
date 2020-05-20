@@ -3,8 +3,7 @@ package GameBoard
 import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 
 import scala.io.{Codec, Source}
-import GUI.GameLookConstants
-import GUI.GameFrame
+import GUI.{FinishedGameFrame, GameFrame, GameLookConstants}
 
 import scala.collection.mutable.ListBuffer
 import scala.language.postfixOps
@@ -17,7 +16,7 @@ object SudokuBoard {
 
   private var currentPosition: (Int, Int) = (0,0)
   private var gameFrame: GameFrame = null
-
+  private var finishedGame: FinishedGameFrame = null
 
   /**
    * Getter for current position of player
@@ -229,8 +228,6 @@ object SudokuBoard {
         for (r <- 0 to 8 by 3; c <- 0 to 8 by 3)
           yield checkIfRowCorrect(getAllFieldsFromSquare(r,c).toArray)
 
-      //TODO: Izbrisi ovo kada vidis da li radi posao
-      println(allSquaresCheckes)
       !allSquaresCheckes.exists(x => x == false)
     }
 
@@ -421,7 +418,7 @@ object SudokuBoard {
         def goThroughAllEntries(possibilities: List[(Int, Int)]):Boolean = {
           if (possibilities.length == 1) {
             //After we found a certain move, me make the adjustments to the board
-            setCurrentPosition(possibilities.head._1, possibilities.head._2)
+            positionChange(possibilities.head._1, possibilities.head._2)
             inputNumber(currentNumber + 1)
 
             //Writing in the new number
@@ -455,6 +452,11 @@ object SudokuBoard {
 
         for (line <- allTurns.toList)
           bw.write(line + '\n')
+
+        if (checkIfSudokuFinished)
+          bw.write("FINISHED!")
+        else
+          bw.write("CANNOT BE SOLVED")
 
         //close the file writer and return
         bw.close()
@@ -490,12 +492,12 @@ object SudokuBoard {
        * @param numOfBox
        * @param color
        */
-      def changeColorOfBox(numOfBox: Int, color: Color):Unit = {
+      def changeColorOfBox(numOfBox: Int, color: Color): Unit = {
         val row = numOfBox / 3 * 3
         val col = (numOfBox % 3) * 3
 
-        for (r <- row until  row + 3;
-             c <- col until  col + 3) {
+        for (r <- row until row + 3;
+             c <- col until col + 3) {
           //returning the previous selection to normal color
           gameFrame.allSudokuFields(r)(c).background = color
         }
@@ -505,7 +507,7 @@ object SudokuBoard {
       changeColorOfBox((currentPosition._1 / 3) * 3 + currentPosition._2 / 3, GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR)
 
       changeColor(row, col, GameLookConstants.SELECTED_BUTTON_AREA_BACKGROUND)
-      changeColorOfBox((row/3) * 3 + col / 3, GameLookConstants.SELECTED_BUTTON_AREA_BACKGROUND)
+      changeColorOfBox((row / 3) * 3 + col / 3, GameLookConstants.SELECTED_BUTTON_AREA_BACKGROUND)
 
       gameFrame.allSudokuFields(row)(col).background = GameLookConstants.SELECTED_BUTTON_BACKGROUND_COLOR
     }
@@ -560,30 +562,36 @@ object SudokuBoard {
       }
     }
 
-    val insertNumOnBoardValidation = insertNumberOnBoard
+    //Change the board only if the current position is valid (the sudoku board isn't finished)
+    if (!(checkIfSudokuFinished && checkIfSudokuCorrect)) {
+      val insertNumOnBoardValidation = insertNumberOnBoard
 
-    if (insertNumOnBoardValidation != GameLookConstants.CODE_ERROR) {
-      val currentPosition: (Int, Int) = getCurrentPosition
+      if (insertNumOnBoardValidation != GameLookConstants.CODE_ERROR) {
+        val currentPosition: (Int, Int) = getCurrentPosition
 
-      //Changing the new input field
-      gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(input.toString) {
-        override def apply(): Unit = {
-          positionChange(currentPosition._1, currentPosition._2)
+        //Changing the new input field
+        gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(input.toString) {
+          override def apply(): Unit = {
+            positionChange(currentPosition._1, currentPosition._2)
+          }
         }
+
+        //Changing the color of the foreground, so the user knows which numbers have manually been set
+        gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).foreground = GameLookConstants.USER_INPUT_BOARD_NUMBER
+        gameFrame.listenTo(gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2))
+
+        //Checking to see if the user finished the game
+        if (checkIfSudokuFinished)
+          if (checkIfSudokuCorrect) {
+            finishSudoku
+          } else {
+            gameFrame.messageOutput.append("THE BOARD IS FILLED, BUT THERE IS A MISTAKE" + '\n')
+          }
       }
-      //Changing the color of the foreground, so the user knows which numbers have manually been set
-      gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).foreground = GameLookConstants.USER_INPUT_BOARD_NUMBER
-      gameFrame.listenTo(gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2))
-
-      //TODO: Dodaj da se prelazi na drugi prozor
-      //Checking to see if the user finished the game
-      if (checkIfSudokuFinished)
-        println("Dobra - " + checkIfSudokuCorrect)
-    }
-
-    //If the game is not over, check to see if there were any errors and notify the user
-    if (insertNumOnBoardValidation != GameLookConstants.CODE_OK){
-      gameFrame.messageOutput.append(getRefusalText(insertNumOnBoardValidation) + '\n')
+      //If the game is not over, check to see if there were any errors and notify the user
+      if (insertNumOnBoardValidation != GameLookConstants.CODE_OK) {
+        gameFrame.messageOutput.append(getRefusalText(insertNumOnBoardValidation) + '\n')
+      }
     }
   }
 
@@ -605,17 +613,36 @@ object SudokuBoard {
       }
     }
 
-    val eraseNumberValidation = eraseNumberFromBoard
-    if (eraseNumberValidation == GameLookConstants.CODE_OK) {
-      val currentPosition: (Int, Int) = SudokuBoard.getCurrentPosition
+    if (!(checkIfSudokuFinished && checkIfSudokuCorrect)) {
+      val eraseNumberValidation = eraseNumberFromBoard
+      if (eraseNumberValidation == GameLookConstants.CODE_OK) {
+        val currentPosition: (Int, Int) = SudokuBoard.getCurrentPosition
 
-      //Changing the new input field
-      gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(" ") {
-        override def apply(): Unit = SudokuBoard.positionChange(currentPosition._1, currentPosition._2)
+        //Changing the new input field
+        gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(" ") {
+          override def apply(): Unit = SudokuBoard.positionChange(currentPosition._1, currentPosition._2)
+        }
+      }
+      else {
+        gameFrame.messageOutput.append("Odabrano polje pripada pocetnoj tabeli." + '\n')
       }
     }
-    else {
-      gameFrame.messageOutput.append("Odabrano polje pripada pocetnoj tabeli." + '\n')
+  }
+
+  /**
+   * Opens the finished game frame
+   */
+  def finishSudoku: Unit = {
+    finishedGame = new GUI.FinishedGameFrame(gameFrame.mainOwner, gameFrame)
+  }
+
+  def closeAllGameWindows: Unit = {
+    if (finishedGame != null) {
+      finishedGame.visible = false
+      finishedGame.dispose()
     }
+    gameFrame.visible = false
+    gameFrame.mainOwner.visible = true
+    gameFrame.dispose()
   }
 }

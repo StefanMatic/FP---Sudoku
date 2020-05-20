@@ -7,11 +7,8 @@ import java.awt.event._
 import GameBoard.SudokuBoard
 import GUI.GameLookConstants
 
-class GameFrame(private val mainOwner: Frame) extends Frame {
+class GameFrame(val mainOwner: Frame) extends Frame {
   val allSudokuFields  = Array.ofDim[Button](9,9)
-
-  //Testiranje - izbrisati ovo
-
   val messageOutput = new TextArea()
 
   /**
@@ -222,8 +219,7 @@ class GameFrame(private val mainOwner: Frame) extends Frame {
     listenTo(closeButton)
     reactions += {
       case ButtonClicked(`closeButton`) => {
-        mainOwner.visible = true
-        dispose()
+        SudokuBoard.closeAllGameWindows
       }
     }
 
