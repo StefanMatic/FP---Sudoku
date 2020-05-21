@@ -1,12 +1,14 @@
 package GUI
 
-import GameBoard.SudokuBoard
+import GameBoard.{ChangeSudokuBoard, SudokuBoard}
 
 import scala.swing._
 import scala.swing.event._
 
-class SudokuPicker(private val mainOwner: Frame) extends Frame {
+class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends Frame {
   val boxPanel = new BoxPanel(Orientation.Vertical)
+  //making a scroll pane to make the frame scrollable
+  val scrollPane = new ScrollPane(boxPanel)
 
   //making the subject of the frame for better user experience
   val subjectSudokuPicker = new Label("SELECT TABLE")
@@ -33,8 +35,14 @@ class SudokuPicker(private val mainOwner: Frame) extends Frame {
       newButton.action = new Action(f.getName.substring(0, f.getName.indexOf("."))) {
         override def apply(): Unit = {
           visible = false
-          SudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
-          new GameFrame(mainOwner)
+          if (gameMode) {
+            SudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
+            new GameFrame(mainOwner)
+          }
+          else {
+            ChangeSudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
+            new NewSudokuBoardFrame(mainOwner)
+          }
         }
       }
 
@@ -50,7 +58,7 @@ class SudokuPicker(private val mainOwner: Frame) extends Frame {
 
   title = "Pick difficulty:"
 
-  contents = boxPanel
+  contents = scrollPane
 
   size = new Dimension(500, 700)
   resizable = true

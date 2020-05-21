@@ -68,7 +68,7 @@ class FinishedGameFrame(val myStartFrame: Frame, val myGameFrame: GameFrame) ext
 
   reactions += {
     case ButtonClicked(`goBack`) => {
-      SudokuBoard.closeAllGameWindows
+      SudokuBoard.closeWindows
     }
   }
 

@@ -44,7 +44,7 @@ object SudokuBoard {
   def setGameFrameTable(game: GameFrame): Unit = {
     gameFrame = game
     //setting the first position for the beginning of the game
-    positionChange(0,0)
+    positionChange(currentPosition._1,currentPosition._2)
   }
 
   /**
@@ -103,6 +103,14 @@ object SudokuBoard {
         case x :: xs if (x == '-') => {
           board(myRow).update(myCol, 0)
           fixedPositions(myRow).update(myCol, false)
+
+          fillOutSudokuField(xs,myRow, myCol + 1)
+        }
+        case x :: xs if (x == 'P') => {
+          board(myRow).update(myCol, 0)
+          fixedPositions(myRow).update(myCol, false)
+          setCurrentPosition(myRow, myCol)
+
           fillOutSudokuField(xs,myRow, myCol + 1)
         }
         case x :: xs =>{
@@ -144,25 +152,6 @@ object SudokuBoard {
   }
 
   //---------------------------- Chekers -------------------------------------
-
-  /**
-   * Getting all the fields from the square in witch the row and col point to
-   *
-   * @param row
-   * @param col
-   * @return
-   */
-  private def getAllFieldsFromSquare(row: Int, col: Int): List[Int] = {
-    val helper = board.flatten.grouped(3).toArray
-
-    val firstIndex = (row / 3) * 9 + col /3
-    val secondIndex = firstIndex + 3
-    val thirdIndex = firstIndex + 6
-
-    //All the fields can be found in an increment of 3
-    val mySquare = List(helper(firstIndex), helper(secondIndex), helper(thirdIndex)).flatten
-    mySquare
-  }
 
   /**
    * Checking if the current move is correct
@@ -248,6 +237,25 @@ object SudokuBoard {
   }
 
   //-------------------------------- Actions -----------------------------------
+
+  /**
+   * Getting all the fields from the square in witch the row and col point to
+   *
+   * @param row
+   * @param col
+   * @return
+   */
+  def getAllFieldsFromSquare(row: Int, col: Int): List[Int] = {
+    val helper = board.flatten.grouped(3).toArray
+
+    val firstIndex = (row / 3) * 9 + col /3
+    val secondIndex = firstIndex + 3
+    val thirdIndex = firstIndex + 6
+
+    //All the fields can be found in an increment of 3
+    val mySquare = List(helper(firstIndex), helper(secondIndex), helper(thirdIndex)).flatten
+    mySquare
+  }
 
   /**
    * Reads instructions that are implemented to the sudoku board. The instructions are taken from a defined
@@ -412,7 +420,7 @@ object SudokuBoard {
        * @return
        */
       def checkIfNumberCanBeUsed (possibilities: List[(Int, Int)], currentNumber: Int): Boolean = {
-        def goThroughAllEntries(possibilities: List[(Int, Int)]):Boolean = {
+        def goThroughAllEntries(possibilities: List[(Int, Int)]): Boolean = {
           if (possibilities.length == 1) {
             //After we found a certain move, me make the adjustments to the board
             positionChange(possibilities.head._1, possibilities.head._2)
@@ -430,8 +438,11 @@ object SudokuBoard {
         }
 
         //HashMap for all the possible fields for the current number
-        val hashMapPossibilities = possibilities groupBy (x => x._1)
-        hashMapPossibilities.exists(x => goThroughAllEntries(x._2))
+        val hashMapPossibilitiesRow = possibilities groupBy (x => x._1)
+        val hashMapPossibilitiesCol = possibilities groupBy (x => x._2)
+
+        //check all the rows and columns for possible moves
+        hashMapPossibilitiesRow.exists(x => goThroughAllEntries(x._2)) || hashMapPossibilitiesCol.exists(x => goThroughAllEntries(x._2))
       }
 
       //Getting all the possibilities for all the numbers and storing them in an array
@@ -442,6 +453,7 @@ object SudokuBoard {
       //try to find even one new move
       val validationForTurn: Boolean = allPossibilitiesForAllNumbers.exists(x => checkIfNumberCanBeUsed(x._1, x._2))
 
+      //if a new move exists, the algorithm continuous
       if (checkIfSudokuFinished || !validationForTurn){
         //opening a file to write thw results in
         val file = new File("src/SudokuSolved/Solved.txt")
@@ -633,7 +645,10 @@ object SudokuBoard {
     finishedGame = new GUI.FinishedGameFrame(gameFrame.mainOwner, gameFrame)
   }
 
-  def closeAllGameWindows: Unit = {
+  /**
+   * Finishing the game and closing the game windows
+   */
+  def closeWindows: Unit = {
     if (finishedGame != null) {
       finishedGame.visible = false
       finishedGame.dispose()

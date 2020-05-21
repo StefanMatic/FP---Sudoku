@@ -58,7 +58,11 @@ class StartFrame extends MainFrame {
   reactions += {
     case ButtonClicked(`startGame`) => {
       visible = false
-      new SudokuPicker(this)
+      new SudokuPicker(this, true)
+    }
+    case ButtonClicked(`makeNewSudokuBoard`) => {
+      visible = false
+      new SudokuPicker(this, false)
     }
     case ButtonClicked(`exitGame`) => sys.exit(0)
   }

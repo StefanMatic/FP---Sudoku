@@ -1,11 +1,11 @@
 package GUI
 
-import scala.swing._
+import GameBoard.{ChangeSudokuBoard, SudokuBoard}
+
 import scala.swing.event._
+import scala.swing._
 
-import GameBoard.SudokuBoard
-
-class GameFrame(val mainOwner: Frame) extends Frame {
+class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   val allSudokuFields  = Array.ofDim[Button](9,9)
   val messageOutput = new TextArea()
 
@@ -63,13 +63,13 @@ class GameFrame(val mainOwner: Frame) extends Frame {
       if (col != 9){
         val newButton: Button = new Button()
         val newButtonAction: Action =
-          if (SudokuBoard.board(row)(col) != 0)
-            new Action(SudokuBoard.board(row)(col).toString) {
-              override def apply(): Unit = SudokuBoard.positionChange(row,col)
-          }
+          if (ChangeSudokuBoard.board(row)(col) != 0)
+            new Action(ChangeSudokuBoard.board(row)(col).toString) {
+              override def apply(): Unit = ChangeSudokuBoard.positionChange(row,col)
+            }
           else {
             new Action(" ") {
-              override def apply(): Unit = SudokuBoard.positionChange(row,col)
+              override def apply(): Unit = ChangeSudokuBoard.positionChange(row,col)
             }
           }
 
@@ -121,12 +121,12 @@ class GameFrame(val mainOwner: Frame) extends Frame {
     reactions += {
       case KeyTyped(_, c, _, _) =>
         if ('1' <= c && c <= '9') {
-          SudokuBoard.inputNumber(c.asDigit)
+          ChangeSudokuBoard.inputNumber(c.asDigit)
         }
-      case KeyPressed(_, Key.Up, _, _) => SudokuBoard.moveCurrentPositionUp
-      case KeyPressed(_, Key.Down, _, _) => SudokuBoard.moveCurrentPositionDown
-      case KeyPressed(_, Key.Left, _, _) => SudokuBoard.moveCurrentPositionLeft
-      case KeyPressed(_, Key.Right, _, _) => SudokuBoard.moveCurrentPositionRight
+      case KeyPressed(_, Key.Up, _, _) => ChangeSudokuBoard.moveCurrentPositionUp
+      case KeyPressed(_, Key.Down, _, _) => ChangeSudokuBoard.moveCurrentPositionDown
+      case KeyPressed(_, Key.Left, _, _) => ChangeSudokuBoard.moveCurrentPositionLeft
+      case KeyPressed(_, Key.Right, _, _) => ChangeSudokuBoard.moveCurrentPositionRight
     }
 
     panel
@@ -139,27 +139,16 @@ class GameFrame(val mainOwner: Frame) extends Frame {
   def numberPicker: BoxPanel = {
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
-    def makeNumberPickers(name: String): Button = {
-      val myButton = new Button(name)
-
-      myButton.xLayoutAlignment = 0.5f
-      myButton.margin = new Insets(15, 15, 15, 15)
-      myButton.font = GameLookConstants.NUMBERS_FONT
-      myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
-      myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
-      myButton
-    }
-
-    val numberOne: Button = makeNumberPickers("1")
-    val numberTwo: Button = makeNumberPickers("2")
-    val numberThree: Button = makeNumberPickers("3")
-    val numberFour: Button = makeNumberPickers("4")
-    val numberFive: Button = makeNumberPickers("5")
-    val numberSix: Button = makeNumberPickers("6")
-    val numberSeven: Button = makeNumberPickers("7")
-    val numberEight: Button = makeNumberPickers("8")
-    val numberNine: Button = makeNumberPickers("9")
-    val erase: Button = makeNumberPickers("  ")
+    val numberOne: Button = makeButtonNumbersFont("1")
+    val numberTwo: Button = makeButtonNumbersFont("2")
+    val numberThree: Button = makeButtonNumbersFont("3")
+    val numberFour: Button = makeButtonNumbersFont("4")
+    val numberFive: Button = makeButtonNumbersFont("5")
+    val numberSix: Button = makeButtonNumbersFont("6")
+    val numberSeven: Button = makeButtonNumbersFont("7")
+    val numberEight: Button = makeButtonNumbersFont("8")
+    val numberNine: Button = makeButtonNumbersFont("9")
+    val erase: Button = makeButtonNumbersFont("  ")
 
     boxPanel.contents += erase
     boxPanel.contents += Swing.VStrut(10)
@@ -192,16 +181,16 @@ class GameFrame(val mainOwner: Frame) extends Frame {
     listenTo(boxPanel.keys)
 
     reactions += {
-      case ButtonClicked(`numberOne`) => SudokuBoard.inputNumber(1)
-      case ButtonClicked(`numberTwo`) => SudokuBoard.inputNumber(2)
-      case ButtonClicked(`numberThree`) => SudokuBoard.inputNumber(3)
-      case ButtonClicked(`numberFour`) => SudokuBoard.inputNumber(4)
-      case ButtonClicked(`numberFive`) => SudokuBoard.inputNumber(5)
-      case ButtonClicked(`numberSix`) => SudokuBoard.inputNumber(6)
-      case ButtonClicked(`numberSeven`) => SudokuBoard.inputNumber(7)
-      case ButtonClicked(`numberEight`) => SudokuBoard.inputNumber(8)
-      case ButtonClicked(`numberNine`) => SudokuBoard.inputNumber(9)
-      case ButtonClicked(`erase`) => SudokuBoard.eraseNumber
+      case ButtonClicked(`numberOne`) => ChangeSudokuBoard.inputNumber(1)
+      case ButtonClicked(`numberTwo`) => ChangeSudokuBoard.inputNumber(2)
+      case ButtonClicked(`numberThree`) => ChangeSudokuBoard.inputNumber(3)
+      case ButtonClicked(`numberFour`) => ChangeSudokuBoard.inputNumber(4)
+      case ButtonClicked(`numberFive`) => ChangeSudokuBoard.inputNumber(5)
+      case ButtonClicked(`numberSix`) => ChangeSudokuBoard.inputNumber(6)
+      case ButtonClicked(`numberSeven`) => ChangeSudokuBoard.inputNumber(7)
+      case ButtonClicked(`numberEight`) => ChangeSudokuBoard.inputNumber(8)
+      case ButtonClicked(`numberNine`) => ChangeSudokuBoard.inputNumber(9)
+      case ButtonClicked(`erase`) => ChangeSudokuBoard.eraseNumber
     }
 
     boxPanel
@@ -212,25 +201,14 @@ class GameFrame(val mainOwner: Frame) extends Frame {
    * @return
    */
   def messageOutputAndExit : BoxPanel = {
-    def makeFunctionNumber(name: String): Button = {
-      val myButton = new Button(name)
-
-      myButton.xLayoutAlignment = 0.5f
-      myButton.margin = new Insets(15, 15, 15, 15)
-      myButton.font = GameLookConstants.NUMBERS_FONT
-      myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
-      myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
-      myButton
-    }
-
     val boxPanel = new BoxPanel(Orientation.Horizontal)
 
-    val closeButton = makeFunctionNumber("Close")
+    val closeButton = makeButtonNumbersFont("Close")
 
     listenTo(closeButton)
     reactions += {
       case ButtonClicked(`closeButton`) => {
-        SudokuBoard.closeWindows
+        ChangeSudokuBoard.closeWindows
       }
     }
 
@@ -249,57 +227,16 @@ class GameFrame(val mainOwner: Frame) extends Frame {
 
     boxPanel
   }
-  /**
-   * Creating the functions panel on the left of the sudoku board
-   *
-   * @return
-   */
-  def functionsPanel: BoxPanel = {
-    def makeFunctionNumber(name: String): Button = {
-      val myButton = new Button(name)
 
-      myButton.xLayoutAlignment = 0.5f
-      myButton.yLayoutAlignment = 0.5f
-      myButton.margin = new Insets(15, 15, 15, 15)
-      myButton.font = GameLookConstants.NUMBERS_FONT
-      myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
-      myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
-      myButton
-    }
-    val boxPanel = new BoxPanel(Orientation.Vertical)
 
-    val readInstructions = makeFunctionNumber("Instructions")
-    val solveSudoku = makeFunctionNumber("Solve")
-
-    boxPanel.contents += Swing.VStrut(10)
-    boxPanel.contents += readInstructions
-    boxPanel.contents += Swing.VStrut(10)
-    boxPanel.contents += solveSudoku
-    boxPanel.contents += Swing.VStrut(10)
-
-    listenTo(readInstructions, solveSudoku)
-    reactions += {
-      case ButtonClicked(`readInstructions`) => {
-        SudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
-      }
-      case ButtonClicked(`solveSudoku`) => {
-        SudokuBoard.solveSudoku
-      }
-    }
-    boxPanel.border = Swing.EmptyBorder(300,30,30,15)
-    boxPanel.background = GameLookConstants.GAME_BACKGROUND
-
-    boxPanel
-  }
-
-  title = "Game"
+  title = "Make sudoku board"
 
   //main panel
   val mainPanel = new BorderPanel(){
     add(sudokuTable, BorderPanel.Position.Center)
     add(numberPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
-    add(functionsPanel, BorderPanel.Position.West)
+    //add(functionsPanel, BorderPanel.Position.West)
   }
 
   listenTo(mainPanel.keys)
@@ -308,7 +245,7 @@ class GameFrame(val mainOwner: Frame) extends Frame {
   mainPanel.background = GameLookConstants.GAME_BACKGROUND
 
   contents = mainPanel
-  SudokuBoard.setGameFrameTable(this)
+  ChangeSudokuBoard.setGameFrameTable(this)
 
   //last attribute touch-up
   visible = true
