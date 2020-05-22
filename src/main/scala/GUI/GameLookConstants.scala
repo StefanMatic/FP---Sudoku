@@ -8,7 +8,7 @@ object GameLookConstants {
   val veryDarkBlue = new Color(29,53,87)
   val darkModerateBlue = new Color(69,123,157)
   val verySoftCyan = new Color(168,218,220)
-  val lightGrayishLimeGreen = new Color(241,250,238)
+  val lightGrayishLimeGreen = new Color(181,190,178)
   val darkRed = new Color(230,57,70)
 
   val black = new Color(0,0,0)

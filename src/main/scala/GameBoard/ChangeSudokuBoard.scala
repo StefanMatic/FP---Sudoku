@@ -15,7 +15,8 @@ object ChangeSudokuBoard extends Sudoku {
    */
   def setGameFrameTable(newBoard: NewSudokuBoardFrame): Unit = {
     newSudokuBoard = newBoard
-    //setting the first position for the beginning of the game
+    //setting the start position for the beginning of the game
+
     positionChange(currentPosition._1,currentPosition._2)
   }
 
@@ -67,8 +68,7 @@ object ChangeSudokuBoard extends Sudoku {
         case x :: xs if (x == 'P') => {
           board(myRow).update(myCol, 0)
           setCurrentPosition(myRow, myCol)
-
-
+          setStartingPosition(myRow, myCol)
           fillOutSudokuField(xs,myRow, myCol + 1)
         }
         case x :: xs =>{
@@ -200,7 +200,144 @@ object ChangeSudokuBoard extends Sudoku {
     findResults
   }
 
+  //----------------------------- Table functions ------------------------------
+
+  def changeStratingPositionWrapper =
+    changeStartingPosition(currentPosition._1, currentPosition._2)
+
+  def filterRowAndColumnWrapper: Unit =
+    filterRowAndColumn(currentPosition._1, currentPosition._2)
+
+  def filterSubSquareWrapper: Unit =
+    filterSubSquare(currentPosition._1, currentPosition._2)
+
+  /**
+   * Changing the current starting position
+   *
+   * @param row
+   * @param col
+   */
+  def changeStartingPosition(row: Int, col: Int): Unit = {
+    restartButtonColor(startPosition._1, startPosition._2)
+    setStartingPosition(row, col)
+    positionChange(currentPosition._1, currentPosition._2)
+  }
+
+  /**
+   * Filtering out all the appearances of selected number in the same row and column
+   *
+   * @param row
+   * @param col
+   */
+  def filterRowAndColumn(row: Int, col: Int): Unit = {
+    val numberToFilterOut: Int = board(row)(col)
+
+    def filterRow: Unit = {
+      //Finding the column value of the number to filter
+      val colOfNumber = board(row).indexOf(numberToFilterOut)
+      //Checking to see if the number exists in row
+      if (colOfNumber != -1) {
+        board(row).update(colOfNumber, 0)
+        changeBoardFieldsGUI(row, colOfNumber, 0)
+
+        //Checking to see if there are more numbers in the same row
+        if (board(row).exists(x => x == numberToFilterOut))
+          filterRow
+      }
+    }
+
+    def filterCol: Unit = {
+      val boardTransposed = board.transpose
+      val rowOfNumber = boardTransposed(col).indexOf(numberToFilterOut)
+      //Checking to see if the number exists in column
+      if (rowOfNumber != -1) {
+        board(rowOfNumber).update(col, 0)
+        changeBoardFieldsGUI(rowOfNumber, col, 0)
+
+        //Checking to see if there are more numbers in the same row
+        if (boardTransposed(col).exists(x => x == numberToFilterOut))
+          filterCol
+      }
+    }
+
+    //If the number to filter is different from 0 - filter row and column
+    if (numberToFilterOut != 0){
+      filterRow
+      filterCol
+    }
+  }
+
+  def filterSubSquare(row: Int, col: Int): Unit = {
+    val numberToFilterOut: Int = board(row)(col)
+    val rowOfSquare: Int = (row / 3) * 3
+    val colOfSquare: Int = (col / 3) * 3
+
+    def filterSquare: Unit = {
+      val squareFields: List[Int] = getAllFieldsFromSquare(row, col)
+      if (squareFields.exists(x => x == numberToFilterOut)) {
+        val indexOfNum = squareFields.indexOf(numberToFilterOut)
+        println(indexOfNum)
+        println("------------")
+        val rowInc = indexOfNum / 3
+        val colInc = indexOfNum % 3
+
+        board(rowOfSquare + rowInc).update(colOfSquare + colInc, 0)
+        changeBoardFieldsGUI(rowOfSquare + rowInc, colOfSquare + colInc, 0)
+
+        println(squareFields.indexOf(numberToFilterOut, indexOfNum + 1))
+        //Checking to see if there are more of the same numbers in the square
+        if (squareFields.indexOf(numberToFilterOut, indexOfNum) != -1)
+          filterSquare
+      }
+    }
+
+    if (numberToFilterOut != 0) {
+      filterSquare
+    }
+  }
+
   //-------------------------------- GUI Actions -------------------------------
+
+  /**
+   * Changing the numbers on the board
+   *
+   * @param row
+   * @param col
+   * @param input
+   */
+  def changeBoardFieldsGUI(row: Int, col:Int, input: Int): Unit ={
+    //Changing the new input field
+    newSudokuBoard.allSudokuFields(row)(col).action =
+      if (input != 0) {
+        new Action(input.toString) {
+          override def apply(): Unit = {
+            positionChange(row, col)
+          }
+        }
+      } else {
+        new Action(" ") {
+          override def apply(): Unit = {
+            positionChange(row, col)
+          }
+        }
+      }
+
+    //Changing the color of the foreground, so the user knows which numbers have manually been set
+    newSudokuBoard.allSudokuFields(row)(col).foreground = GameLookConstants.USER_INPUT_BOARD_NUMBER
+    newSudokuBoard.listenTo(newSudokuBoard.allSudokuFields(row)(col))
+  }
+
+  /**
+   * Changing the background color of the start position
+   */
+  def showStartPosition: Unit = {
+    newSudokuBoard.allSudokuFields(startPosition._1)(startPosition._2).background = GameLookConstants.lightGrayishLimeGreen
+  }
+
+  def restartButtonColor(row: Int, col: Int): Unit = {
+    newSudokuBoard.allSudokuFields(row)(col).background = GameLookConstants.white
+
+  }
 
   /**
    * Changes the sudoku table in real time in response to user movement on the sudoku field
@@ -245,6 +382,9 @@ object ChangeSudokuBoard extends Sudoku {
 
     setBoardColors
     setCurrentPosition((row, col))
+
+    //While the sudoku is in edit mode, the user can always see the start position
+    showStartPosition
   }
 
   /**
@@ -280,15 +420,7 @@ object ChangeSudokuBoard extends Sudoku {
     val curPosition: (Int, Int) = getCurrentPosition
 
     //Changing the new input field
-    newSudokuBoard.allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(input.toString) {
-      override def apply(): Unit = {
-        positionChange(curPosition._1, curPosition._2)
-      }
-    }
-
-    //Changing the color of the foreground, so the user knows which numbers have manually been set
-    newSudokuBoard.allSudokuFields(currentPosition._1)(currentPosition._2).foreground = GameLookConstants.USER_INPUT_BOARD_NUMBER
-    newSudokuBoard.listenTo(newSudokuBoard.allSudokuFields(currentPosition._1)(currentPosition._2))
+    changeBoardFieldsGUI(curPosition._1, curPosition._2, input)
 
     //Check to see if there were any errors and notify the user
     if (insertNumOnBoardValidation == GameLookConstants.CODE_WARNING) {

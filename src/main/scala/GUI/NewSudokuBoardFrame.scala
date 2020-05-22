@@ -227,7 +227,44 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
 
     boxPanel
   }
+  /**
+   * Creating the functions panel on the left of the sudoku board
+   *
+   * @return
+   */
+  def functionsPanel: BoxPanel = {
 
+    val boxPanel = new BoxPanel(Orientation.Vertical)
+
+    val changeStartPosition = makeButtonNumbersFont("CHANGE START POSITION")
+    val filterRowAndColumn = makeButtonNumbersFont("Filter row and column")
+    val filterSquare = makeButtonNumbersFont("FILTER SQUARE")
+
+    boxPanel.contents += Swing.VStrut(10)
+    boxPanel.contents += changeStartPosition
+    boxPanel.contents += Swing.VStrut(10)
+    boxPanel.contents += filterRowAndColumn
+    boxPanel.contents += Swing.VStrut(10)
+    boxPanel.contents += filterSquare
+    boxPanel.contents += Swing.VStrut(10)
+
+    listenTo(changeStartPosition, filterRowAndColumn, filterSquare)
+    reactions += {
+      case ButtonClicked(`changeStartPosition`) => {
+        ChangeSudokuBoard.changeStratingPositionWrapper
+      }
+      case ButtonClicked(`filterRowAndColumn`) => {
+        ChangeSudokuBoard.filterRowAndColumnWrapper
+      }
+      case ButtonClicked(`filterSquare`) => {
+        ChangeSudokuBoard.filterSubSquareWrapper
+      }
+    }
+    boxPanel.border = Swing.EmptyBorder(300,30,30,15)
+    boxPanel.background = GameLookConstants.GAME_BACKGROUND
+
+    boxPanel
+  }
 
   title = "Make sudoku board"
 
@@ -236,7 +273,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     add(sudokuTable, BorderPanel.Position.Center)
     add(numberPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
-    //add(functionsPanel, BorderPanel.Position.West)
+    add(functionsPanel, BorderPanel.Position.West)
   }
 
   listenTo(mainPanel.keys)

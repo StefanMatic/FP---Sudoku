@@ -237,6 +237,7 @@ abstract class Sudoku {
   def eraseNumber: Unit
 
   /**
+   * ABSTRACT
    * Implementation of this method should close all the currently opened windows
    */
   def closeWindows: Unit
