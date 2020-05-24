@@ -211,6 +211,28 @@ object ChangeSudokuBoard extends Sudoku {
   def filterSubSquareWrapper: Unit =
     filterSubSquare(currentPosition._1, currentPosition._2)
 
+  def transposition: Unit = {
+    val manipulatedBoard = board.transpose
+    manipulatedBoard.copyToArray(board)
+
+    def changeBoardGUI = changeBoard(changeBoardFieldsGUI)
+    changeBoardGUI
+
+    //Setting the board colors in the previous order
+    positionChange(currentPosition._1, currentPosition._2)
+  }
+
+  def changeUp: Unit = {
+    val manipulatedBoard = board.map(col => col.map(el => 9 - el))
+    manipulatedBoard.copyToArray(board)
+
+    def changeBoardGUI = changeBoard(changeBoardFieldsGUI)
+
+    changeBoardGUI
+    //Setting the board colors in the previous order
+    positionChange(currentPosition._1, currentPosition._2)
+  }
+
   /**
    * Changing the current starting position
    *
@@ -221,6 +243,18 @@ object ChangeSudokuBoard extends Sudoku {
     restartButtonColor(startPosition._1, startPosition._2)
     setStartingPosition(row, col)
     positionChange(currentPosition._1, currentPosition._2)
+  }
+
+  /**
+   * Updating the board and GUI
+   *
+   * @param row
+   * @param column
+   * @param input
+   */
+  def updateBoardAndFields(row: Int, column: Int, input: Int): Unit = {
+    board(row).update(column, input)
+    changeBoardFieldsGUI(row, column, input)
   }
 
   /**
@@ -264,9 +298,16 @@ object ChangeSudokuBoard extends Sudoku {
     if (numberToFilterOut != 0){
       filterRow
       filterCol
+      updateBoardAndFields(row, col, numberToFilterOut)
     }
   }
 
+  /**
+   * Filtering out all the appearances of selected number in the same sub square
+   *
+   * @param row
+   * @param col
+   */
   def filterSubSquare(row: Int, col: Int): Unit = {
     val numberToFilterOut: Int = board(row)(col)
     val rowOfSquare: Int = (row / 3) * 3
@@ -276,15 +317,13 @@ object ChangeSudokuBoard extends Sudoku {
       val squareFields: List[Int] = getAllFieldsFromSquare(row, col)
       if (squareFields.exists(x => x == numberToFilterOut)) {
         val indexOfNum = squareFields.indexOf(numberToFilterOut)
-        println(indexOfNum)
-        println("------------")
+
         val rowInc = indexOfNum / 3
         val colInc = indexOfNum % 3
 
-        board(rowOfSquare + rowInc).update(colOfSquare + colInc, 0)
-        changeBoardFieldsGUI(rowOfSquare + rowInc, colOfSquare + colInc, 0)
+        //Updating the fields
+        updateBoardAndFields(rowOfSquare + rowInc, colOfSquare + colInc, 0)
 
-        println(squareFields.indexOf(numberToFilterOut, indexOfNum + 1))
         //Checking to see if there are more of the same numbers in the square
         if (squareFields.indexOf(numberToFilterOut, indexOfNum) != -1)
           filterSquare
@@ -293,6 +332,9 @@ object ChangeSudokuBoard extends Sudoku {
 
     if (numberToFilterOut != 0) {
       filterSquare
+
+      //Putting back the original number
+      updateBoardAndFields(row, col, numberToFilterOut)
     }
   }
 
@@ -334,6 +376,12 @@ object ChangeSudokuBoard extends Sudoku {
     newSudokuBoard.allSudokuFields(startPosition._1)(startPosition._2).background = GameLookConstants.lightGrayishLimeGreen
   }
 
+  /**
+   * Restarting the button background color to white
+   *
+   * @param row
+   * @param col
+   */
   def restartButtonColor(row: Int, col: Int): Unit = {
     newSudokuBoard.allSudokuFields(row)(col).background = GameLookConstants.white
 
@@ -434,11 +482,9 @@ object ChangeSudokuBoard extends Sudoku {
   override def eraseNumber: Unit = {
     board(currentPosition._1).update(currentPosition._2, 0)
     val curPosition: (Int, Int) = getCurrentPosition
-    println(curPosition)
+
     //Changing the new input field
-    newSudokuBoard.allSudokuFields(curPosition._1)(curPosition._2).action = new Action(" ") {
-      override def apply(): Unit = SudokuBoard.positionChange(curPosition._1, curPosition._2)
-    }
+    changeBoardFieldsGUI(curPosition._1, curPosition._2, 0)
   }
 
   /**

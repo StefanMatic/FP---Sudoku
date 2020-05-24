@@ -187,6 +187,37 @@ abstract class Sudoku {
   //-------------------------------- Actions -----------------------------------
 
   /**
+   * Method for currying! Applying the given function on all elements of board.
+   *
+   * @param f
+   */
+  def changeBoard(f: (Int, Int, Int) => Unit): Unit =  {
+    /**
+     * Going through all the rows and applying the given function
+     *
+     * @param row
+     * @param rowIndex
+     */
+    def changeBoardRows(row: Array[Int], rowIndex: Int) = {
+      /**
+       * Going through all the elements of a row and applying the given function
+       *
+       * @param el
+       * @param colIndex
+       */
+      def changeBoardElements(el: Int, colIndex: Int) = {
+        f(rowIndex, colIndex, el)
+      }
+
+      val elementsWithIndex = row.zipWithIndex
+      elementsWithIndex.foreach(x => changeBoardElements(x._1, x._2))
+    }
+
+    val rowsWithIndex = board.zipWithIndex
+    rowsWithIndex.foreach(x => changeBoardRows(x._1, x._2))
+  }
+
+  /**
    * Getting all the fields from the square in witch the row and col point to
    *
    * @param row

@@ -236,9 +236,11 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
 
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
-    val changeStartPosition = makeButtonNumbersFont("CHANGE START POSITION")
-    val filterRowAndColumn = makeButtonNumbersFont("Filter row and column")
-    val filterSquare = makeButtonNumbersFont("FILTER SQUARE")
+    val changeStartPosition = makeButtonNumbersFont("POCETNA POZICIJA")
+    val filterRowAndColumn = makeButtonNumbersFont("FILTRIRAJ REDOVE I KOLONE")
+    val filterSquare = makeButtonNumbersFont("FILTRIRAJ KOSCKU")
+    val changeUp = makeButtonNumbersFont("ZAMENA")
+    val transpose = makeButtonNumbersFont("TRANSPONUJ")
 
     boxPanel.contents += Swing.VStrut(10)
     boxPanel.contents += changeStartPosition
@@ -247,8 +249,13 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     boxPanel.contents += Swing.VStrut(10)
     boxPanel.contents += filterSquare
     boxPanel.contents += Swing.VStrut(10)
+    boxPanel.contents += changeUp
+    boxPanel.contents += Swing.VStrut(10)
+    boxPanel.contents += transpose
+    boxPanel.contents += Swing.VStrut(10)
 
-    listenTo(changeStartPosition, filterRowAndColumn, filterSquare)
+
+    listenTo(changeStartPosition, filterRowAndColumn, filterSquare, changeUp, transpose)
     reactions += {
       case ButtonClicked(`changeStartPosition`) => {
         ChangeSudokuBoard.changeStratingPositionWrapper
@@ -259,8 +266,14 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
       case ButtonClicked(`filterSquare`) => {
         ChangeSudokuBoard.filterSubSquareWrapper
       }
+      case ButtonClicked(`changeUp`) => {
+        ChangeSudokuBoard.changeUp
+      }
+      case ButtonClicked(`transpose`) => {
+        ChangeSudokuBoard.transposition
+      }
     }
-    boxPanel.border = Swing.EmptyBorder(300,30,30,15)
+    boxPanel.border = Swing.EmptyBorder(150,30,30,15)
     boxPanel.background = GameLookConstants.GAME_BACKGROUND
 
     boxPanel
