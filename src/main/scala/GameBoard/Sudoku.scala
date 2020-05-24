@@ -4,6 +4,8 @@ import scala.io.Source
 import scala.swing.Frame
 
 abstract class Sudoku {
+  type Matrix = Array[Array[Int]]
+
   //Set sudoku board playing field
   val board  = Array.ofDim[Int](9,9)
 
@@ -49,7 +51,7 @@ abstract class Sudoku {
   /**
    *Displays the sudoku board
    */
-  def showTable(table: Array[Array[Int]]): String = {
+  def showTable(table: Matrix): String = {
     table.map(col => col mkString(" ")).mkString("\n")
   }
 
@@ -106,7 +108,7 @@ abstract class Sudoku {
     }
 
     def checkSquare: Boolean = {
-      val mySquare = getAllFieldsFromSquare(row, col)
+      val mySquare = getAllFieldsFromSquare(board, row, col)
       !mySquare.exists(x => x == inputValue)
     }
 
@@ -119,21 +121,22 @@ abstract class Sudoku {
    *
    * @return
    */
-  def checkIfSudokuFinished: Boolean = {
+  def checkIfSudokuFinished(table: Matrix): Boolean = {
     def checkIfEmptyFieldExists(myArray: Array[Int]): Boolean = {
       //if there exists even one 0 in the array, the function will return !true (false)
-      !myArray.exists(x=> x==0)
+      !myArray.exists(x => x == 0)
     }
     // returns true only if there are no 0 in any of the rows
-    board.forall(arr => checkIfEmptyFieldExists(arr))
+    table.forall(arr => checkIfEmptyFieldExists(arr))
   }
 
   /**
    * Checks if the sudoku board is correctly filled
    *
+   * @param table
    * @return
    */
-  def checkIfSudokuCorrect: Boolean = {
+  def checkIfSudokuCorrect(table: Matrix): Boolean = {
     /**
      *  Helper method for checking correctness for a row
      *
@@ -145,15 +148,15 @@ abstract class Sudoku {
     }
 
     def checkRows: Boolean = {
-      board.forall(x => checkIfRowCorrect(x))
+      table.forall(x => checkIfRowCorrect(x))
     }
     def checkCols: Boolean = {
-      board.transpose.forall(x => checkIfRowCorrect(x))
+      table.transpose.forall(x => checkIfRowCorrect(x))
     }
     def checkSquare: Boolean = {
       val allSquaresCheckes =
         for (r <- 0 to 8 by 3; c <- 0 to 8 by 3)
-          yield checkIfRowCorrect(getAllFieldsFromSquare(r,c).toArray)
+          yield checkIfRowCorrect(getAllFieldsFromSquare(table,r,c).toArray)
 
       !allSquaresCheckes.exists(x => x == false)
     }
@@ -224,8 +227,8 @@ abstract class Sudoku {
    * @param col
    * @return
    */
-  def getAllFieldsFromSquare(row: Int, col: Int): List[Int] = {
-    val helper = board.flatten.grouped(3).toArray
+  def getAllFieldsFromSquare(table: Matrix, row: Int, col: Int): List[Int] = {
+    val helper = table.flatten.grouped(3).toArray
 
     val firstIndex = (row / 3) * 9 + col /3
     val secondIndex = firstIndex + 3

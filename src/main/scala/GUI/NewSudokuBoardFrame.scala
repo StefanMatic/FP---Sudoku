@@ -8,6 +8,8 @@ import scala.swing._
 class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   val allSudokuFields  = Array.ofDim[Button](9,9)
   val messageOutput = new TextArea()
+  val saveSudoku = makeButtonNumbersFont("Sacuvaj")
+  val sudokuName = new TextField()
 
   //method for making uniform buttons with the predeclared NUMBER_FONT
   def makeButtonNumbersFont(name: String): Button = {
@@ -278,11 +280,50 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
 
     boxPanel
   }
+  /**
+   * Creating the input for sudoku name and button for saving
+   *
+   * @return
+   */
+  def sudokuNameAndSave: BoxPanel = {
+    val boxPanel = new BoxPanel(Orientation.Horizontal)
 
-  title = "Make sudoku board"
+    val hint = new Label("Naziv tabele: ")
+    hint.foreground = GameLookConstants.MENU_BUTTON_BACKGROUND
+    hint.font = GameLookConstants.MENU_TITLE_FONT
+
+    sudokuName.editable = true
+    sudokuName.yLayoutAlignment = 0.5
+    sudokuName.columns = 20
+    sudokuName.font = GameLookConstants.MENU_TITLE_FONT
+    sudokuName.foreground = GameLookConstants.MENU_TITLE
+
+    boxPanel.contents += Swing.HStrut(10)
+    boxPanel.contents += hint
+    boxPanel.contents += Swing.HStrut(10)
+    boxPanel.contents += sudokuName
+    boxPanel.contents += Swing.HStrut(10)
+    boxPanel.contents += saveSudoku
+    boxPanel.contents += Swing.HStrut(10)
+
+    listenTo(saveSudoku)
+    reactions += {
+      case ButtonClicked(`saveSudoku`) => {
+        ChangeSudokuBoard.saveNewBoard
+      }
+    }
+
+    boxPanel.border = Swing.EmptyBorder(30,30,15,30)
+    boxPanel.background = GameLookConstants.GAME_BACKGROUND
+
+    boxPanel
+  }
+
+  title = "Napravi novu sudoku"
 
   //main panel
   val mainPanel = new BorderPanel(){
+    add(sudokuNameAndSave, BorderPanel.Position.North)
     add(sudokuTable, BorderPanel.Position.Center)
     add(numberPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
@@ -301,5 +342,5 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   visible = true
   resizable = true
   peer.setLocationRelativeTo(null)
-  size = new Dimension(1000, 900)
+  size = new Dimension(1200, 1000)
 }
