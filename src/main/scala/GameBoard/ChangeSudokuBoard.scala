@@ -20,6 +20,7 @@ object ChangeSudokuBoard extends Sudoku {
     //setting the start position for the beginning of the game
 
     positionChange(currentPosition._1,currentPosition._2)
+    checkSaveButton
   }
 
   /**
@@ -182,10 +183,8 @@ object ChangeSudokuBoard extends Sudoku {
       if (checkIfSudokuFinished(boardCopy) || !validationForTurn){
         //If it's finished, that means the sudoku game is solvable
         if (checkIfSudokuFinished(boardCopy) && checkIfSudokuCorrect(boardCopy)) {
-          println("sve ok")
           true
         } else {
-          println("ne ne")
           false
         }
       } else {
@@ -204,7 +203,10 @@ object ChangeSudokuBoard extends Sudoku {
    *
    */
   def checkSaveButton: Unit = {
-    if (solveSudoku){
+    val sudokuName: String = newSudokuBoard.sudokuName.text
+
+    //Checking if the sudoku board is solvable and if the user gave a name for the new table
+    if (solveSudoku && !sudokuName.equals("")){
       newSudokuBoard.saveSudoku.enabled = true
     } else {
       newSudokuBoard.saveSudoku.enabled = false
@@ -369,8 +371,12 @@ object ChangeSudokuBoard extends Sudoku {
   }
 
   def saveNewBoard: Unit = {
+    // Getting the name of the sudoku
+    val newName = (newSudokuBoard.sudokuName.text).trim
+    val fileName = "src/SudokuBoardExamples/" + newName + ".txt"
+
     // FileWriter
-    val file = new File("Proba")
+    val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))
 
     def writeToFileFunction(row: Int, col: Int, el: Int) = {

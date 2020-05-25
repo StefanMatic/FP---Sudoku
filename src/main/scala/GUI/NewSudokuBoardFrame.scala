@@ -1,6 +1,6 @@
 package GUI
 
-import GameBoard.{ChangeSudokuBoard, SudokuBoard}
+import GameBoard.ChangeSudokuBoard
 
 import scala.swing.event._
 import scala.swing._
@@ -297,6 +297,12 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     sudokuName.columns = 20
     sudokuName.font = GameLookConstants.MENU_TITLE_FONT
     sudokuName.foreground = GameLookConstants.MENU_TITLE
+    sudokuName.listenTo(sudokuName.keys)
+    sudokuName.reactions += {
+      case e: KeyTyped => {
+        ChangeSudokuBoard.checkSaveButton
+      }
+    }
 
     boxPanel.contents += Swing.HStrut(10)
     boxPanel.contents += hint
@@ -310,6 +316,8 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     reactions += {
       case ButtonClicked(`saveSudoku`) => {
         ChangeSudokuBoard.saveNewBoard
+        Dialog.showMessage(contents.head, "Sacuvana je nova tabela", title="Napravljena je tabela")
+        ChangeSudokuBoard.closeWindows
       }
     }
 
