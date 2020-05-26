@@ -11,6 +11,9 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   val saveSudoku = makeButtonNumbersFont("Sacuvaj")
   val sudokuName = new TextField()
 
+  val numPicker: BoxPanel = numberPicker
+  val funcPanel: BoxPanel = functionsPanel
+
   //method for making uniform buttons with the predeclared NUMBER_FONT
   def makeButtonNumbersFont(name: String): Button = {
     val myButton = new Button(name)
@@ -21,6 +24,19 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
     myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
     myButton
+  }
+
+  def addFunction(name: String, funct: List[(Int, Int)=>Unit]): Unit = {
+    val newButton = makeButtonNumbersFont(name.toUpperCase)
+    funcPanel.contents += Swing.VStrut(10)
+    funcPanel.contents += newButton
+
+    listenTo(newButton)
+    reactions += {
+      case ButtonClicked(`newButton`) => {
+        ChangeSudokuBoard.executeFunctionList(funct)
+      }
+    }
   }
 
   /**
@@ -150,9 +166,9 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     val numberSeven: Button = makeButtonNumbersFont("7")
     val numberEight: Button = makeButtonNumbersFont("8")
     val numberNine: Button = makeButtonNumbersFont("9")
-    val erase: Button = makeButtonNumbersFont("  ")
+    // val erase: Button = makeButtonNumbersFont("  ")
 
-    boxPanel.contents += erase
+    // boxPanel.contents += erase
     boxPanel.contents += Swing.VStrut(10)
     boxPanel.contents += numberOne
     boxPanel.contents += Swing.VStrut(10)
@@ -178,7 +194,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     boxPanel.background = GameLookConstants.GAME_BACKGROUND
 
     //button handlers
-    listenTo(numberOne, numberTwo, numberThree, numberFour, numberFive, numberSix, numberSeven, numberEight, numberNine, erase)
+    listenTo(numberOne, numberTwo, numberThree, numberFour, numberFive, numberSix, numberSeven, numberEight, numberNine)
     //keyboard handlers
     listenTo(boxPanel.keys)
 
@@ -192,9 +208,10 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
       case ButtonClicked(`numberSeven`) => ChangeSudokuBoard.inputNumber(7)
       case ButtonClicked(`numberEight`) => ChangeSudokuBoard.inputNumber(8)
       case ButtonClicked(`numberNine`) => ChangeSudokuBoard.inputNumber(9)
-      case ButtonClicked(`erase`) => ChangeSudokuBoard.eraseNumber
+      // case ButtonClicked(`erase`) => ChangeSudokuBoard.eraseNumber
     }
 
+    boxPanel.visible = false
     boxPanel
   }
   /**
@@ -238,44 +255,21 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
 
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
-    val changeStartPosition = makeButtonNumbersFont("POCETNA POZICIJA")
-    val filterRowAndColumn = makeButtonNumbersFont("FILTRIRAJ REDOVE I KOLONE")
-    val filterSquare = makeButtonNumbersFont("FILTRIRAJ KOSCKU")
-    val changeUp = makeButtonNumbersFont("ZAMENA")
-    val transpose = makeButtonNumbersFont("TRANSPONUJ")
+    for (func <- ChangeSudokuBoard.functionList) {
+      val newButton = makeButtonNumbersFont(func._1.toUpperCase)
 
-    boxPanel.contents += Swing.VStrut(10)
-    boxPanel.contents += changeStartPosition
-    boxPanel.contents += Swing.VStrut(10)
-    boxPanel.contents += filterRowAndColumn
-    boxPanel.contents += Swing.VStrut(10)
-    boxPanel.contents += filterSquare
-    boxPanel.contents += Swing.VStrut(10)
-    boxPanel.contents += changeUp
-    boxPanel.contents += Swing.VStrut(10)
-    boxPanel.contents += transpose
-    boxPanel.contents += Swing.VStrut(10)
+      boxPanel.contents += Swing.VStrut(10)
+      boxPanel.contents += newButton
 
-
-    listenTo(changeStartPosition, filterRowAndColumn, filterSquare, changeUp, transpose)
-    reactions += {
-      case ButtonClicked(`changeStartPosition`) => {
-        ChangeSudokuBoard.changeStratingPositionWrapper
-      }
-      case ButtonClicked(`filterRowAndColumn`) => {
-        ChangeSudokuBoard.filterRowAndColumnWrapper
-      }
-      case ButtonClicked(`filterSquare`) => {
-        ChangeSudokuBoard.filterSubSquareWrapper
-      }
-      case ButtonClicked(`changeUp`) => {
-        ChangeSudokuBoard.changeUp
-      }
-      case ButtonClicked(`transpose`) => {
-        ChangeSudokuBoard.transposition
+      listenTo(newButton)
+      reactions += {
+        case ButtonClicked(`newButton`) => {
+          ChangeSudokuBoard.executeFunctionList(func._2)
+        }
       }
     }
-    boxPanel.border = Swing.EmptyBorder(150,30,30,15)
+
+    boxPanel.border = Swing.EmptyBorder(30,30,30,15)
     boxPanel.background = GameLookConstants.GAME_BACKGROUND
 
     boxPanel
@@ -333,9 +327,9 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   val mainPanel = new BorderPanel(){
     add(sudokuNameAndSave, BorderPanel.Position.North)
     add(sudokuTable, BorderPanel.Position.Center)
-    add(numberPicker, BorderPanel.Position.East)
+    add(numPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
-    add(functionsPanel, BorderPanel.Position.West)
+    add(new ScrollPane(funcPanel), BorderPanel.Position.West)
   }
 
   listenTo(mainPanel.keys)

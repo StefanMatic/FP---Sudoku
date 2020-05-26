@@ -6,8 +6,13 @@ import GUI.{GameLookConstants, NewSudokuBoardFrame}
 
 import scala.swing.{Action, Color}
 import scala.language.postfixOps
+import scala.swing._
+
 
 object ChangeSudokuBoard extends Sudoku {
+  type FunctionListType = List[(String, List[(Int, Int) => Unit])]
+
+  val functionList: FunctionListType = makeInitFunctionButtons
   var newSudokuBoard: NewSudokuBoardFrame = null
 
   /**
@@ -198,6 +203,34 @@ object ChangeSudokuBoard extends Sudoku {
 
   //----------------------------- Table functions ------------------------------
 
+  def makeInitFunctionButtons: FunctionListType = {
+    val list1 = ("Unesi broj", List[(Int, Int) => Unit](inputNumberWrapper))
+    val list2 = ("Izbrisi broj", List[(Int, Int) => Unit](eraseNumberWrapper))
+    val list3 = ("Promeni pocetnu poziciju", List[(Int, Int) => Unit](changeStartPositionWrapper))
+    val list4 = ("Filtritej po redu i koloni", List[(Int, Int) => Unit](filterRowAndColWrapper))
+    val list5 = ("Filtritaj kocku", List[(Int, Int) => Unit](filterSquareWrapper))
+    val list6 = ("Transponovanje", List[(Int, Int) => Unit](transposeWrapper))
+    val list7 = ("Zamena", List[(Int, Int) => Unit](changeUpWrapper))
+
+    list1 :: list2 :: list3 :: list4 :: list5 :: list6 :: list7 :: Nil
+  }
+
+  def addFunctionToList(functionName: String, funcList: List[(Int, Int) => Unit]) = {
+    functionList ::: List((functionName, funcList))
+  }
+
+  def executeFunctionList(myFunctions: List[(Int, Int) => Unit]): Unit = {
+    if (myFunctions.length == 1) {
+      myFunctions.head(currentPosition._1, currentPosition._2)
+    }
+    else {
+      for (func <- myFunctions) {
+        //Signal the method to ask for row and col
+        func(-1, -1)
+      }
+    }
+  }
+
   /**
    * Checking to see if the save new sudoku board is enabled or disabled
    *
@@ -212,26 +245,6 @@ object ChangeSudokuBoard extends Sudoku {
       newSudokuBoard.saveSudoku.enabled = false
     }
   }
-
-  /**
-   *
-   *
-   * @param f
-   * @param row
-   * @param col
-   */
-  def filterBoard(f: (Int, Int) => Unit)(row: Int, col: Int): Unit = {
-    f(row, col)
-  }
-
-  def changeStratingPositionWrapper =
-    changeStartingPosition(currentPosition._1, currentPosition._2)
-
-  def filterRowAndColumnWrapper: Unit =
-    filterRowAndColumn(currentPosition._1, currentPosition._2)
-
-  def filterSubSquareWrapper: Unit =
-    filterSubSquare(currentPosition._1, currentPosition._2)
 
   /**
    * Transposition the sudoku board
@@ -370,6 +383,9 @@ object ChangeSudokuBoard extends Sudoku {
     checkSaveButton
   }
 
+  /**
+   * Saving the current board to a file with user given name
+   */
   def saveNewBoard: Unit = {
     // Getting the name of the sudoku
     val newName = (newSudokuBoard.sudokuName.text).trim
@@ -407,6 +423,205 @@ object ChangeSudokuBoard extends Sudoku {
 
     writeToFile
     bw.close()
+  }
+
+  //---------------------------- Wrapper version -----------------------------
+
+  /**
+   * Checks to see if all the characters are numeric
+   *
+   * @param x
+   * @return
+   */
+  def isAllDigits(x: String) = x forall Character.isDigit
+
+  /**
+   * Getting the location of the next operation from user
+   *
+   * @param reasonForAsking
+   * @return
+   */
+  def getRowAndCol(reasonForAsking: String): (Int, Int) = {
+    val rowAndColString = Dialog.showInput(newSudokuBoard.contents.head, "Radi " + reasonForAsking + " dati broj reda i kolone u formi red,kolona (redovi i kolone se indeksiraju 0-8)" , initial="")
+    rowAndColString match {
+      case Some(s) => {
+        val rowAndCol: String = s.trim
+        println(rowAndCol)
+        if (rowAndCol.length == 3 && rowAndCol.contains(',')){
+          val rowAndColValues: Array[String] = rowAndCol.split(',')
+          if (rowAndColValues.forall(x => isAllDigits(x))) {
+            if (rowAndColValues(0).toInt != 9 && rowAndColValues(1).toInt !=9)
+              (rowAndColValues(0).toInt, rowAndColValues(1).toInt)
+            else
+              getRowAndCol("tacnog unosa")
+          } else {
+            // Not digits
+            getRowAndCol("tacnog unosa")
+          }
+        }
+        else {
+          getRowAndCol("tacnog unosa")
+        }
+      }
+      case None => {
+        //If the user doesn't give a value, the function will take the currentPosition of game
+        (currentPosition._1, currentPosition._2)
+      }
+    }
+  }
+
+  /**
+   * Changing the start position wrapper. The two parameters are row and col that are either given through current position of user on the board
+   * or by the dialog input from the user
+   *
+   * @param row
+   * @param col
+   */
+  def changeStartPositionWrapper(row: Int, col: Int): Unit = {
+    if (row == -1) {
+      val pos: (Int, Int) = getRowAndCol("PROMENE POCETNE POZICIJE")
+      //If wrong format than repeat process
+      if (pos._1 == -1)
+        changeStartPositionWrapper(-1, -1)
+      changeStartingPosition(pos._1, pos._2)
+    } else {
+      changeStartingPosition(row, col)
+    }
+  }
+
+  /**
+   * Input number wrapper. The two parameters are row and col that are either given through current position of user on the board
+   * or by the dialog input from the user
+   *
+   * @param row
+   * @param col
+   */
+  def inputNumberWrapper(row: Int, col: Int): Unit = {
+    if (row == -1) {
+      val pos: (Int, Int) = getRowAndCol("UNOSA BROJA")
+      //If wrong format than repeat process
+      if (pos._1 == -1)
+        inputNumberWrapper(-1, -1)
+
+      val retrieve = Dialog.showInput(newSudokuBoard.contents.head, "Koji broj zelite da unesete", initial = "")
+
+      retrieve match {
+        case Some(s) => {
+          val inputString: String = s.trim
+
+          if (isAllDigits(inputString)){
+            val inputValue = inputString.toInt
+            if (inputValue >= 0 && inputValue <= 8)
+              updateBoardAndFields(pos._1, pos._2, inputString.toInt)
+            else {
+              //Again because of bad formatting
+              inputNumberWrapper(-1,-1)
+            }
+          }
+        }
+        case None => {
+          //Do nothig, ignore the function
+        }
+      }
+    } else{
+      //Giving the user a chance to use the number picker
+      newSudokuBoard.numPicker.visible = true
+    }
+
+  }
+
+  /**
+   * Erase number wrapper. The two parameters are row and col that are either given through current position of user on the board
+   * or by the dialog input from the user
+   *
+   * @param row
+   * @param col
+   */
+  def eraseNumberWrapper(row: Int, col: Int): Unit = {
+    newSudokuBoard.numPicker.visible = false
+    if (row == -1) {
+      val pos: (Int, Int) = getRowAndCol("BRISANJE BROJA")
+      //If wrong format than repeat process
+      if (pos._1 == -1) {
+        eraseNumberWrapper(-1, -1)
+      }
+
+      // Applying the function to the new pos._1 and pos._2
+      updateBoardAndFields(pos._1, pos._2, 0)
+    } else {
+      updateBoardAndFields(row, col, 0)
+    }
+  }
+
+  /**
+   * Filter row and column wrapper. The two parameters are row and col that are either given through current position of user on the board
+   * or by the dialog input from the user
+   *
+   * @param row
+   * @param col
+   */
+  def filterRowAndColWrapper(row: Int, col: Int): Unit = {
+    newSudokuBoard.numPicker.visible = false
+    if (row == -1) {
+      val pos: (Int, Int) = getRowAndCol("FILTRIRANJA REDOVA I KOLONA")
+      //If wrong format than repeat process
+      if (pos._1 == -1) {
+        filterRowAndColWrapper(-1, -1)
+      }
+
+      // Applying the function to the new pos._1 and pos._2
+      filterRowAndColumn(pos._1, pos._2)
+    } else {
+      filterRowAndColumn(row, col)
+    }
+  }
+
+  /**
+   * Filter square wrapper. The two parameters are row and col that are either given through current position of user on the board
+   * or by the dialog input from the user
+   *
+   * @param row
+   * @param col
+   */
+  def filterSquareWrapper(row: Int, col: Int): Unit = {
+    newSudokuBoard.numPicker.visible = false
+    if (row == -1) {
+      val pos: (Int, Int) = getRowAndCol("FILTRIRANJA KOCKE")
+      //If wrong format than repeat process
+      if (pos._1 == -1) {
+        filterSquareWrapper(-1, -1)
+      }
+
+      // Applying the function to the new pos._1 and pos._2
+      filterSubSquare(pos._1, pos._2)
+    } else {
+      filterSubSquare(row, col)
+    }
+
+  }
+
+  /**
+   * Change-up wrapper. The two parameters are row and col that are either given through current position of user on the board
+   * or by the dialog input from the user
+   *
+   * @param row
+   * @param col
+   */
+  def changeUpWrapper(row: Int, col: Int): Unit = {
+    newSudokuBoard.numPicker.visible = false
+    changeUp
+  }
+
+  /**
+   * Translation wrapper. The two parameters are row and col that are either given through current position of user on the board
+   * or by the dialog input from the user
+   *
+   * @param row
+   * @param col
+   */
+  def transposeWrapper(row: Int, col: Int): Unit = {
+    newSudokuBoard.numPicker.visible = false
+    transposition
   }
 
   //-------------------------------- GUI Actions -------------------------------
