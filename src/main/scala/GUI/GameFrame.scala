@@ -308,7 +308,6 @@ class GameFrame(val mainOwner: Frame) extends Frame {
   mainPanel.background = GameLookConstants.GAME_BACKGROUND
 
   contents = mainPanel
-  SudokuBoard.setGameFrameTable(this)
 
   //last attribute touch-up
   visible = true

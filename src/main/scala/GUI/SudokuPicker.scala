@@ -37,11 +37,11 @@ class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends 
           visible = false
           if (gameMode) {
             SudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
-            new GameFrame(mainOwner)
+            SudokuBoard.setGameFrame(mainOwner)
           }
           else {
             ChangeSudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
-            new NewSudokuBoardFrame(mainOwner)
+            ChangeSudokuBoard.setGameFrame(mainOwner)
           }
         }
       }
@@ -56,7 +56,7 @@ class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends 
   boxPanel.border = Swing.EmptyBorder(150, 100, 150, 100)
   boxPanel.xLayoutAlignment = 0.5f
 
-  title = "Pick difficulty:"
+  title = "Pick difficulty"
 
   contents = scrollPane
 

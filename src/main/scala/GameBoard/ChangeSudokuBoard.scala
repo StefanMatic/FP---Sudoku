@@ -2,7 +2,7 @@ package GameBoard
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import GUI.{GameLookConstants, NewSudokuBoardFrame}
+import GUI._
 
 import scala.swing.{Action, Color}
 import scala.language.postfixOps
@@ -10,18 +10,19 @@ import scala.swing._
 
 
 object ChangeSudokuBoard extends Sudoku {
-  type FunctionListType = List[(String, List[(Int, Int) => Unit])]
+  type FunctionWrapper = ((Int, Int)) => (Int, Int)
+  type FunctionListType = List[(String, List[FunctionWrapper])]
 
-  val functionList: FunctionListType = makeInitFunctionButtons
+  var functionList: FunctionListType = makeInitFunctionButtons
   var newSudokuBoard: NewSudokuBoardFrame = null
 
   /**
    * Setter for NewSudokuBoard
    *
-   * @param newBoard
+   * @param mainOwner
    */
-  def setGameFrameTable(newBoard: NewSudokuBoardFrame): Unit = {
-    newSudokuBoard = newBoard
+  def setGameFrame(mainOwner: Frame): Unit = {
+    newSudokuBoard = new NewSudokuBoardFrame(mainOwner)
     //setting the start position for the beginning of the game
 
     positionChange(currentPosition._1,currentPosition._2)
@@ -203,23 +204,41 @@ object ChangeSudokuBoard extends Sudoku {
 
   //----------------------------- Table functions ------------------------------
 
+  /**
+   * Making initial list of basic board manipulation functions
+   *
+   * @return
+   */
   def makeInitFunctionButtons: FunctionListType = {
-    val list1 = ("Unesi broj", List[(Int, Int) => Unit](inputNumberWrapper))
-    val list2 = ("Izbrisi broj", List[(Int, Int) => Unit](eraseNumberWrapper))
-    val list3 = ("Promeni pocetnu poziciju", List[(Int, Int) => Unit](changeStartPositionWrapper))
-    val list4 = ("Filtritej po redu i koloni", List[(Int, Int) => Unit](filterRowAndColWrapper))
-    val list5 = ("Filtritaj kocku", List[(Int, Int) => Unit](filterSquareWrapper))
-    val list6 = ("Transponovanje", List[(Int, Int) => Unit](transposeWrapper))
-    val list7 = ("Zamena", List[(Int, Int) => Unit](changeUpWrapper))
+    val list1 = ("Input number", List[FunctionWrapper](inputNumberWrapper))
+    val list2 = ("Erase number", List[FunctionWrapper](eraseNumberWrapper))
+    val list3 = ("Change start position", List[FunctionWrapper](changeStartPositionWrapper))
+    val list4 = ("Filter row and column", List[FunctionWrapper](filterRowAndColWrapper))
+    val list5 = ("Filter square", List[FunctionWrapper](filterSquareWrapper))
+    val list6 = ("Transpose", List[FunctionWrapper](transposeWrapper))
+    val list7 = ("Change up", List[FunctionWrapper](changeUpWrapper))
 
     list1 :: list2 :: list3 :: list4 :: list5 :: list6 :: list7 :: Nil
   }
 
-  def addFunctionToList(functionName: String, funcList: List[(Int, Int) => Unit]) = {
-    functionList ::: List((functionName, funcList))
+  /**
+   * After making a new sequence or composite function, this method adds the function to the global list
+   *
+   * @param functionName
+   * @param funcList
+   */
+  def addFunctionToList(functionName: String, funcList: List[FunctionWrapper]) = {
+    functionList = functionList ::: List((functionName, funcList))
+    newSudokuBoard.addFunction(functionName, funcList)
   }
 
-  def executeFunctionList(myFunctions: List[(Int, Int) => Unit]): Unit = {
+  /**
+   * Going through given list of function and executing them one by one. If there are more function than 1 in the list
+   * the called function get a signal through their arguments
+   *
+   * @param myFunctions
+   */
+  def executeFunctionList(myFunctions: List[FunctionWrapper]): Unit = {
     if (myFunctions.length == 1) {
       myFunctions.head(currentPosition._1, currentPosition._2)
     }
@@ -233,7 +252,6 @@ object ChangeSudokuBoard extends Sudoku {
 
   /**
    * Checking to see if the save new sudoku board is enabled or disabled
-   *
    */
   def checkSaveButton: Unit = {
     val sudokuName: String = newSudokuBoard.sudokuName.text
@@ -253,8 +271,8 @@ object ChangeSudokuBoard extends Sudoku {
     val manipulatedBoard = board.transpose
     manipulatedBoard.copyToArray(board)
 
-    def changeBoardGUI = changeBoard(changeBoardFieldsGUI)
-    changeBoardGUI
+    def changeBoardGUI: Matrix => Unit = changeBoard(changeBoardFieldsGUI)
+    changeBoardGUI(board)
 
     //Setting the board colors in the previous order
     positionChange(currentPosition._1, currentPosition._2)
@@ -268,9 +286,9 @@ object ChangeSudokuBoard extends Sudoku {
     val manipulatedBoard = board.map(col => col.map(el => 9 - el))
     manipulatedBoard.copyToArray(board)
 
-    def changeBoardGUI = changeBoard(changeBoardFieldsGUI)
+    def changeBoardGUI: Matrix => Unit = changeBoard(changeBoardFieldsGUI)
 
-    changeBoardGUI
+    changeBoardGUI(board)
     //Setting the board colors in the previous order
     positionChange(currentPosition._1, currentPosition._2)
     checkSaveButton
@@ -419,9 +437,9 @@ object ChangeSudokuBoard extends Sudoku {
         }
       }
     }
-    def writeToFile = changeBoard(writeToFileFunction)
+    def writeToFile: Matrix => Unit = changeBoard(writeToFileFunction)
 
-    writeToFile
+    writeToFile(board)
     bw.close()
   }
 
@@ -433,15 +451,15 @@ object ChangeSudokuBoard extends Sudoku {
    * @param x
    * @return
    */
-  def isAllDigits(x: String) = x forall Character.isDigit
+  private def isAllDigits(x: String) = x forall Character.isDigit
 
   /**
-   * Getting the location of the next operation from user
+   * Getting the location of the next operation from user through a dialog
    *
    * @param reasonForAsking
    * @return
    */
-  def getRowAndCol(reasonForAsking: String): (Int, Int) = {
+  private def getRowAndCol(reasonForAsking: String): (Int, Int) = {
     val rowAndColString = Dialog.showInput(newSudokuBoard.contents.head, "Radi " + reasonForAsking + " dati broj reda i kolone u formi red,kolona (redovi i kolone se indeksiraju 0-8)" , initial="")
     rowAndColString match {
       case Some(s) => {
@@ -471,121 +489,146 @@ object ChangeSudokuBoard extends Sudoku {
   }
 
   /**
+   * Getting the number for input into a certain field
+   *
+   * @return
+   */
+  private def getNumberForInput: Int = {
+    val retrieve = Dialog.showInput(newSudokuBoard.contents.head, "Koji broj zelite da unesete", initial = "")
+    retrieve match {
+      case Some(s) => {
+        val inputString: String = s.trim
+
+        if (isAllDigits(inputString)){
+          val inputValue = inputString.toInt
+          if (inputValue >= 1 && inputValue <= 9) {
+            inputValue
+          } else {
+            //Again because of bad formatting
+            getNumberForInput
+          }
+        } else {
+          getNumberForInput
+        }
+      }
+      case None => {
+        //return bad number to signal the program to ignore operation
+        -1
+      }
+    }
+  }
+
+  /**
    * Changing the start position wrapper. The two parameters are row and col that are either given through current position of user on the board
    * or by the dialog input from the user
    *
-   * @param row
-   * @param col
+   * @param position
    */
-  def changeStartPositionWrapper(row: Int, col: Int): Unit = {
-    if (row == -1) {
+  def changeStartPositionWrapper(position: (Int, Int)): (Int, Int) = {
+    println("change start position")
+    if (position._1 == -1) {
       val pos: (Int, Int) = getRowAndCol("PROMENE POCETNE POZICIJE")
       //If wrong format than repeat process
       if (pos._1 == -1)
-        changeStartPositionWrapper(-1, -1)
+        changeStartPositionWrapper((-1, -1))
       changeStartingPosition(pos._1, pos._2)
     } else {
-      changeStartingPosition(row, col)
+      changeStartingPosition(position._1, position._2)
     }
+
+    //returning the given position
+    position
   }
 
   /**
    * Input number wrapper. The two parameters are row and col that are either given through current position of user on the board
    * or by the dialog input from the user
    *
-   * @param row
-   * @param col
+   * @param position
    */
-  def inputNumberWrapper(row: Int, col: Int): Unit = {
-    if (row == -1) {
+  def inputNumberWrapper(position: (Int, Int)): (Int, Int) = {
+    println("input number")
+    if (position._1 == -1) {
       val pos: (Int, Int) = getRowAndCol("UNOSA BROJA")
       //If wrong format than repeat process
       if (pos._1 == -1)
         inputNumberWrapper(-1, -1)
 
-      val retrieve = Dialog.showInput(newSudokuBoard.contents.head, "Koji broj zelite da unesete", initial = "")
+      positionChange(pos._1, pos._2)
 
-      retrieve match {
-        case Some(s) => {
-          val inputString: String = s.trim
-
-          if (isAllDigits(inputString)){
-            val inputValue = inputString.toInt
-            if (inputValue >= 0 && inputValue <= 8)
-              updateBoardAndFields(pos._1, pos._2, inputString.toInt)
-            else {
-              //Again because of bad formatting
-              inputNumberWrapper(-1,-1)
-            }
-          }
-        }
-        case None => {
-          //Do nothig, ignore the function
-        }
-      }
+      val numberForInput = getNumberForInput
+      //If number valid do operation, else ignore
+      if (numberForInput != -1)
+        inputNumber(numberForInput)
     } else{
-      //Giving the user a chance to use the number picker
-      newSudokuBoard.numPicker.visible = true
+
+      val numberForInput = getNumberForInput
+      //If number valid do operation, else ignore
+      if (numberForInput != -1)
+        inputNumber(numberForInput)
     }
 
+    //returning the row and column
+    position
   }
 
   /**
    * Erase number wrapper. The two parameters are row and col that are either given through current position of user on the board
    * or by the dialog input from the user
    *
-   * @param row
-   * @param col
+   * @param position
    */
-  def eraseNumberWrapper(row: Int, col: Int): Unit = {
-    newSudokuBoard.numPicker.visible = false
-    if (row == -1) {
+  def eraseNumberWrapper(position: (Int, Int)): (Int, Int) = {
+    println("erase number")
+    if (position._1 == -1) {
       val pos: (Int, Int) = getRowAndCol("BRISANJE BROJA")
       //If wrong format than repeat process
       if (pos._1 == -1) {
-        eraseNumberWrapper(-1, -1)
+        eraseNumberWrapper((-1, -1))
       }
 
+      positionChange(pos._1, pos._2)
       // Applying the function to the new pos._1 and pos._2
-      updateBoardAndFields(pos._1, pos._2, 0)
+      eraseNumber
     } else {
-      updateBoardAndFields(row, col, 0)
+      eraseNumber
     }
+    //returning the row and column
+    position
   }
 
   /**
    * Filter row and column wrapper. The two parameters are row and col that are either given through current position of user on the board
    * or by the dialog input from the user
    *
-   * @param row
-   * @param col
+   * @param position
    */
-  def filterRowAndColWrapper(row: Int, col: Int): Unit = {
-    newSudokuBoard.numPicker.visible = false
-    if (row == -1) {
+  def filterRowAndColWrapper(position: (Int, Int)): (Int, Int) = {
+    println("filter row and col")
+    if (position._1 == -1) {
       val pos: (Int, Int) = getRowAndCol("FILTRIRANJA REDOVA I KOLONA")
       //If wrong format than repeat process
       if (pos._1 == -1) {
         filterRowAndColWrapper(-1, -1)
       }
-
       // Applying the function to the new pos._1 and pos._2
       filterRowAndColumn(pos._1, pos._2)
     } else {
-      filterRowAndColumn(row, col)
+      filterRowAndColumn(position._1, position._2)
     }
+    //returning the row and column
+    position
   }
 
   /**
    * Filter square wrapper. The two parameters are row and col that are either given through current position of user on the board
    * or by the dialog input from the user
    *
-   * @param row
-   * @param col
+   * @param position
    */
-  def filterSquareWrapper(row: Int, col: Int): Unit = {
-    newSudokuBoard.numPicker.visible = false
-    if (row == -1) {
+  def filterSquareWrapper(position: (Int, Int)): (Int, Int) = {
+    println("filter square")
+    if (position._1 == -1) {
       val pos: (Int, Int) = getRowAndCol("FILTRIRANJA KOCKE")
       //If wrong format than repeat process
       if (pos._1 == -1) {
@@ -595,33 +638,38 @@ object ChangeSudokuBoard extends Sudoku {
       // Applying the function to the new pos._1 and pos._2
       filterSubSquare(pos._1, pos._2)
     } else {
-      filterSubSquare(row, col)
+      filterSubSquare(position._1, position._2)
     }
 
+    position
   }
 
   /**
    * Change-up wrapper. The two parameters are row and col that are either given through current position of user on the board
    * or by the dialog input from the user
    *
-   * @param row
-   * @param col
+   * @param position
    */
-  def changeUpWrapper(row: Int, col: Int): Unit = {
-    newSudokuBoard.numPicker.visible = false
+  def changeUpWrapper(position: (Int, Int)): (Int, Int) = {
+    println("change up")
     changeUp
+
+    //returning the position
+    position
   }
 
   /**
    * Translation wrapper. The two parameters are row and col that are either given through current position of user on the board
    * or by the dialog input from the user
    *
-   * @param row
-   * @param col
+   * @param position
    */
-  def transposeWrapper(row: Int, col: Int): Unit = {
-    newSudokuBoard.numPicker.visible = false
+  def transposeWrapper(position: (Int, Int)): (Int, Int) = {
+    println("transposition")
     transposition
+
+    //returning the position
+    position
   }
 
   //-------------------------------- GUI Actions -------------------------------
@@ -670,7 +718,6 @@ object ChangeSudokuBoard extends Sudoku {
    */
   def restartButtonColor(row: Int, col: Int): Unit = {
     newSudokuBoard.allSudokuFields(row)(col).background = GameLookConstants.white
-
   }
 
   /**
@@ -758,7 +805,8 @@ object ChangeSudokuBoard extends Sudoku {
 
     //Check to see if there were any errors and notify the user
     if (insertNumOnBoardValidation == GameLookConstants.CODE_WARNING) {
-      newSudokuBoard.messageOutput.append("WARNING: The number " + input + " already exists in the same row, column or sub square" + '\n')
+      newSudokuBoard.messageOutput.append("WARNING: (" + currentPosition._1 + ", " + currentPosition._2 + ") The number " + input + " already exists" +
+        "in the same row, column or square" + '\n')
     }
 
     checkSaveButton
@@ -784,5 +832,11 @@ object ChangeSudokuBoard extends Sudoku {
     newSudokuBoard.visible = false
     newSudokuBoard.mainOwner.visible = true
     newSudokuBoard.dispose()
+  }
+
+  def addedFunctionMessage:Unit = {
+    Dialog.showMessage(newSudokuBoard.contents.head, "Function added!", title="New function")
+    changeUp
+    changeUp
   }
 }

@@ -154,11 +154,11 @@ abstract class Sudoku {
       table.transpose.forall(x => checkIfRowCorrect(x))
     }
     def checkSquare: Boolean = {
-      val allSquaresCheckes =
+      val allSquaresChecks =
         for (r <- 0 to 8 by 3; c <- 0 to 8 by 3)
           yield checkIfRowCorrect(getAllFieldsFromSquare(table,r,c).toArray)
 
-      !allSquaresCheckes.exists(x => x == false)
+      !allSquaresChecks.exists(x => x == false)
     }
 
     checkRows && checkCols && checkSquare
@@ -194,7 +194,7 @@ abstract class Sudoku {
    *
    * @param f
    */
-  def changeBoard(f: (Int, Int, Int) => Unit): Unit =  {
+  def changeBoard(f: (Int, Int, Int) => Unit)(table: Matrix): Unit =  {
     /**
      * Going through all the rows and applying the given function
      *
@@ -216,13 +216,14 @@ abstract class Sudoku {
       elementsWithIndex.foreach(x => changeBoardElements(x._1, x._2))
     }
 
-    val rowsWithIndex = board.zipWithIndex
+    val rowsWithIndex = table.zipWithIndex
     rowsWithIndex.foreach(x => changeBoardRows(x._1, x._2))
   }
 
   /**
    * Getting all the fields from the square in witch the row and col point to
    *
+   * @param table
    * @param row
    * @param col
    * @return
@@ -254,7 +255,7 @@ abstract class Sudoku {
    * @param row
    * @param col
    */
-  def positionChange (row: Int, col: Int)
+  def positionChange (row: Int, col: Int): Unit
 
   /**
    * ABSTRACT

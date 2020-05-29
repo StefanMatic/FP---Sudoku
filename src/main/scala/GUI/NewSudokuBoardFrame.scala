@@ -8,7 +8,7 @@ import scala.swing._
 class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   val allSudokuFields  = Array.ofDim[Button](9,9)
   val messageOutput = new TextArea()
-  val saveSudoku = makeButtonNumbersFont("Sacuvaj")
+  val saveSudoku = makeButtonNumbersFont("SAVE")
   val sudokuName = new TextField()
 
   val numPicker: BoxPanel = numberPicker
@@ -26,7 +26,13 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     myButton
   }
 
-  def addFunction(name: String, funct: List[(Int, Int)=>Unit]): Unit = {
+  /**
+   * Adding newly created functions
+   *
+   * @param name
+   * @param func
+   */
+  def addFunction(name: String, func: List[((Int, Int))=>(Int, Int)]): Unit = {
     val newButton = makeButtonNumbersFont(name.toUpperCase)
     funcPanel.contents += Swing.VStrut(10)
     funcPanel.contents += newButton
@@ -34,9 +40,14 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     listenTo(newButton)
     reactions += {
       case ButtonClicked(`newButton`) => {
-        ChangeSudokuBoard.executeFunctionList(funct)
+        ChangeSudokuBoard.executeFunctionList(func)
       }
     }
+
+    funcPanel.repaint()
+    westNoxPanel.repaint()
+
+    ChangeSudokuBoard.addedFunctionMessage
   }
 
   /**
@@ -282,7 +293,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   def sudokuNameAndSave: BoxPanel = {
     val boxPanel = new BoxPanel(Orientation.Horizontal)
 
-    val hint = new Label("Naziv tabele: ")
+    val hint = new Label("Name of table: ")
     hint.foreground = GameLookConstants.MENU_BUTTON_BACKGROUND
     hint.font = GameLookConstants.MENU_TITLE_FONT
 
@@ -310,7 +321,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     reactions += {
       case ButtonClicked(`saveSudoku`) => {
         ChangeSudokuBoard.saveNewBoard
-        Dialog.showMessage(contents.head, "Sacuvana je nova tabela", title="Napravljena je tabela")
+        Dialog.showMessage(contents.head, "The new sudoku table is saved", title="SAVED!")
         ChangeSudokuBoard.closeWindows
       }
     }
@@ -321,15 +332,52 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     boxPanel
   }
 
-  title = "Napravi novu sudoku"
+  def functionMaker: BoxPanel = {
+    val boxPanel = new BoxPanel(Orientation.Horizontal)
 
+    val funcChoose = new Label("Make new function:")
+    funcChoose.font = GameLookConstants.MENU_TITLE_FONT
+    val compositeFunction = makeButtonNumbersFont("Composite")
+    val sequenceFunction = makeButtonNumbersFont("Sequence")
+
+    boxPanel.contents += Swing.HStrut(10)
+    boxPanel.contents += funcChoose
+    boxPanel.contents += Swing.HStrut(10)
+    boxPanel.contents += compositeFunction
+    boxPanel.contents += Swing.HStrut(10)
+    boxPanel.contents += sequenceFunction
+    boxPanel.contents += Swing.HStrut(10)
+
+    listenTo(compositeFunction, sequenceFunction)
+    reactions += {
+      case ButtonClicked(`compositeFunction`) =>
+        new MakeNewFunctionFrame(false)
+      case ButtonClicked(`sequenceFunction`) =>
+        new MakeNewFunctionFrame(true)
+    }
+
+    boxPanel.background = GameLookConstants.GAME_BACKGROUND
+    boxPanel
+  }
+
+  title = "Make new sudoku table"
+
+  val westNoxPanel = new ScrollPane(funcPanel)
+
+  val northBoxPanel = new BoxPanel(Orientation.Vertical)
+  northBoxPanel.contents += sudokuNameAndSave
+  northBoxPanel.contents += Swing.VGlue
+  northBoxPanel.contents += functionMaker
+  northBoxPanel.contents += Swing.VStrut(10)
+
+  northBoxPanel.background = GameLookConstants.GAME_BACKGROUND
   //main panel
   val mainPanel = new BorderPanel(){
-    add(sudokuNameAndSave, BorderPanel.Position.North)
+    add(northBoxPanel, BorderPanel.Position.North)
     add(sudokuTable, BorderPanel.Position.Center)
     add(numPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
-    add(new ScrollPane(funcPanel), BorderPanel.Position.West)
+    add(westNoxPanel, BorderPanel.Position.West)
   }
 
   listenTo(mainPanel.keys)
@@ -338,11 +386,10 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
   mainPanel.background = GameLookConstants.GAME_BACKGROUND
 
   contents = mainPanel
-  ChangeSudokuBoard.setGameFrameTable(this)
 
   //last attribute touch-up
   visible = true
   resizable = true
   peer.setLocationRelativeTo(null)
-  size = new Dimension(1200, 1000)
+  size = new Dimension(1000, 1000)
 }
