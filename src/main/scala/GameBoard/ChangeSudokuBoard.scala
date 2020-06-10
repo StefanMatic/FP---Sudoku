@@ -9,89 +9,30 @@ import scala.language.postfixOps
 import scala.swing._
 
 
-object ChangeSudokuBoard extends Sudoku {
+class ChangeSudokuBoard(path: String, mainOwner: Frame) {
   type FunctionWrapper = ((Int, Int)) => (Int, Int)
   type FunctionListType = List[(String, List[FunctionWrapper])]
 
+  //Set sudoku board playing field
+  val sudokuTable: SudokuMatrix = fillSudoku(path)
+  var positions: Positions = findStartPosition(sudokuTable)
+
   var functionList: FunctionListType = makeInitFunctionButtons
-  var newSudokuBoard: NewSudokuBoardFrame = null
+  val newSudokuBoard: NewSudokuBoardFrame = setGameFrame(mainOwner)
 
   /**
    * Setter for NewSudokuBoard
    *
    * @param mainOwner
    */
-  def setGameFrame(mainOwner: Frame): Unit = {
-    newSudokuBoard = new NewSudokuBoardFrame(mainOwner)
+  def setGameFrame(mainOwner: Frame): NewSudokuBoardFrame = {
+    val newBoard = new NewSudokuBoardFrame(mainOwner, this)
     //setting the start position for the beginning of the game
 
-    positionChange(currentPosition._1,currentPosition._2)
-    checkSaveButton
-  }
+    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newBoard)
+    checkSaveButton(newBoard)
 
-  /**
-   * Resets the sudoku board
-   *
-   */
-  override def resetBoard = {
-    board.map(col => col.map(x => 0))
-  }
-
-  //------------------------ Start the game -------------------------
-
-  /**
-   * Files out the sudoku from a file
-   *
-   * @param path
-   */
-  override def fillSudoku(path: String): Unit = {
-    fillOutSudoku(readFromFile(path))
-  }
-
-  /**
-   * Filling out all the fields of the sudoku board that are given to the method with the parameter
-   * allRows
-   *
-   * @param allRows
-   */
-  private def fillOutSudoku(allRows: List[String]): Unit = {
-    def fillOutSudokuRows(allMyRows: List[String], row: Int): Unit = {
-      allMyRows match {
-        case x :: xs => {
-          val startColIndex: Int = 0
-          fillOutSudokuField(x.toList, row, startColIndex)
-          //recursive call for the next row
-          fillOutSudokuRows(xs, row+1)
-        }
-        case Nil => println("End of table")
-      }
-    }
-
-    def fillOutSudokuField(fieldValues: List[Char], myRow: Int, myCol: Int): Unit ={
-      fieldValues match {
-        case x :: xs if (x == '-') => {
-          board(myRow).update(myCol, 0)
-
-          fillOutSudokuField(xs,myRow, myCol + 1)
-        }
-        case x :: xs if (x == 'P') => {
-          board(myRow).update(myCol, 0)
-          setCurrentPosition(myRow, myCol)
-          setStartingPosition(myRow, myCol)
-          fillOutSudokuField(xs,myRow, myCol + 1)
-        }
-        case x :: xs =>{
-          board(myRow).update(myCol, x.asDigit)
-
-          //We are storing witch fields were pre-filled
-          fillOutSudokuField(xs,myRow, myCol + 1)
-        }
-        case Nil =>
-      }
-    }
-
-    //Calling the start first method to start the filling of the sudoku wield with the index of the first row
-    fillOutSudokuRows(allRows, 0)
+    newBoard
   }
 
   //-------------------------------- Actions -----------------------------------
@@ -99,9 +40,9 @@ object ChangeSudokuBoard extends Sudoku {
   /**
    * Solves the current sudoku board
    */
-  override def solveSudoku: Boolean = {
+   def solveSudoku: Boolean = {
     //making a copy of board to solve
-    val boardCopy: Matrix = board.map(_.clone)
+    val boardCopy: SudokuMatrix = sudokuTable.map(_.clone)
 
     /**
      * Looks at the square of the current field and checks if there are any duplicates of numbers
@@ -112,7 +53,7 @@ object ChangeSudokuBoard extends Sudoku {
      * @return
      */
     def checkSquare(row: Int, col: Int, number: Int): Boolean = {
-      !getAllFieldsFromSquare(boardCopy, row, col).exists(x => x == number)
+      !getAllFieldsFromSquare( row, col, getMatrixOfValue(boardCopy)).exists(x => x == number)
     }
     /**
      * Getting all the rows in witch the requested number doesn't appear
@@ -121,7 +62,7 @@ object ChangeSudokuBoard extends Sudoku {
      * @param number
      * @return
      */
-    def getAllRowsWithoutNumber(table: Matrix, number: Int): List[Int] = {
+    def getAllRowsWithoutNumber(number: Int, table: Matrix): List[Int] = {
       val allUnusedRows =
         for (row <- 0 to 8 if (!table(row).exists(x => x == number)))
           yield row
@@ -136,11 +77,11 @@ object ChangeSudokuBoard extends Sudoku {
      * @return
      */
     def getAllPossibleFieldsForNumber(number: Int): List[(Int, Int)] = {
-      val allRows = getAllRowsWithoutNumber(boardCopy, number)
-      val allCols = getAllRowsWithoutNumber(boardCopy.transpose, number)
+      val allRows = getAllRowsWithoutNumber(number, getMatrixOfValue(boardCopy))
+      val allCols = getAllRowsWithoutNumber(number, getMatrixOfValue(boardCopy.transpose))
 
       val allPossibleFields =
-        for (rows <- allRows; cols <- allCols if (checkSquare(rows, cols, number) &&  boardCopy(rows)(cols) == 0))
+        for (rows <- allRows; cols <- allCols if (checkSquare(rows, cols, number) &&  boardCopy(rows)(cols)._1 == 0))
           yield (rows, cols)
 
       allPossibleFields.toList
@@ -161,7 +102,7 @@ object ChangeSudokuBoard extends Sudoku {
         def goThroughAllEntries(possibilities: List[(Int, Int)]): Boolean = {
           if (possibilities.length == 1) {
             //Writing in the new number
-            boardCopy(possibilities.head._1).update(possibilities.head._2, currentNumber + 1)
+            boardCopy(possibilities.head._1).update(possibilities.head._2, (currentNumber + 1, false))
 
             //return true because we made adjustments on the board
             true
@@ -186,9 +127,9 @@ object ChangeSudokuBoard extends Sudoku {
       val validationForTurn: Boolean = allPossibilitiesForAllNumbers.exists(x => checkIfNumberCanBeUsed(x._1, x._2))
 
       //if a new move exists, the algorithm continuous
-      if (checkIfSudokuFinished(boardCopy) || !validationForTurn){
+      if (checkIfSudokuFinished(getMatrixOfValue(boardCopy)) || !validationForTurn){
         //If it's finished, that means the sudoku game is solvable
-        if (checkIfSudokuFinished(boardCopy) && checkIfSudokuCorrect(boardCopy)) {
+        if (checkIfSudokuFinished(getMatrixOfValue(boardCopy)) && checkIfSudokuCorrect(getMatrixOfValue(boardCopy))) {
           true
         } else {
           false
@@ -240,7 +181,7 @@ object ChangeSudokuBoard extends Sudoku {
    */
   def executeFunctionList(myFunctions: List[FunctionWrapper]): Unit = {
     if (myFunctions.length == 1) {
-      myFunctions.head(currentPosition._1, currentPosition._2)
+      myFunctions.head(positions.currentPosition._1, positions.currentPosition._2)
     }
     else {
       for (func <- myFunctions) {
@@ -253,14 +194,14 @@ object ChangeSudokuBoard extends Sudoku {
   /**
    * Checking to see if the save new sudoku board is enabled or disabled
    */
-  def checkSaveButton: Unit = {
-    val sudokuName: String = newSudokuBoard.sudokuName.text
+  def checkSaveButton(newSudokuBoardFrame: NewSudokuBoardFrame): Unit = {
+    val sudokuName: String = newSudokuBoardFrame.sudokuName.text
 
     //Checking if the sudoku board is solvable and if the user gave a name for the new table
     if (solveSudoku && !sudokuName.equals("")){
-      newSudokuBoard.saveSudoku.enabled = true
+      newSudokuBoardFrame.saveSudoku.enabled = true
     } else {
-      newSudokuBoard.saveSudoku.enabled = false
+      newSudokuBoardFrame.saveSudoku.enabled = false
     }
   }
 
@@ -268,30 +209,30 @@ object ChangeSudokuBoard extends Sudoku {
    * Transposition the sudoku board
    */
   def transposition: Unit = {
-    val manipulatedBoard = board.transpose
-    manipulatedBoard.copyToArray(board)
+    val manipulatedBoard = sudokuTable.transpose
+    manipulatedBoard.copyToArray(sudokuTable)
 
-    def changeBoardGUI: Matrix => Unit = changeBoard(changeBoardFieldsGUI)
-    changeBoardGUI(board)
+    def changeBoardGUI: SudokuMatrix => Unit = changeBoard(changeBoardFieldsGUI)
+    changeBoardGUI(sudokuTable)
 
     //Setting the board colors in the previous order
-    positionChange(currentPosition._1, currentPosition._2)
-    checkSaveButton
+    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+    checkSaveButton(newSudokuBoard)
   }
 
   /**
    * Making a new table in which every element is 9-current value
    */
   def changeUp: Unit = {
-    val manipulatedBoard = board.map(col => col.map(el => 9 - el))
-    manipulatedBoard.copyToArray(board)
+    val manipulatedBoard = sudokuTable.map(col => col.map(el => (9 - el._1, el._2)))
+    manipulatedBoard.copyToArray(sudokuTable)
 
-    def changeBoardGUI: Matrix => Unit = changeBoard(changeBoardFieldsGUI)
+    def changeBoardGUI: SudokuMatrix => Unit = changeBoard(changeBoardFieldsGUI)
 
-    changeBoardGUI(board)
+    changeBoardGUI(sudokuTable)
     //Setting the board colors in the previous order
-    positionChange(currentPosition._1, currentPosition._2)
-    checkSaveButton
+    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+    checkSaveButton(newSudokuBoard)
   }
 
   /**
@@ -301,9 +242,9 @@ object ChangeSudokuBoard extends Sudoku {
    * @param col
    */
   def changeStartingPosition(row: Int, col: Int): Unit = {
-    restartButtonColor(startPosition._1, startPosition._2)
-    setStartingPosition(row, col)
-    positionChange(currentPosition._1, currentPosition._2)
+    restartButtonColor(positions.startingPosition._1, positions.startingPosition._2, newSudokuBoard)
+    positions = positions.changeStartingPosition(row, col)
+    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
   }
 
   /**
@@ -314,7 +255,9 @@ object ChangeSudokuBoard extends Sudoku {
    * @param input
    */
   def updateBoardAndFields(row: Int, column: Int, input: Int): Unit = {
-    board(row).update(column, input)
+    val previousValue: (Int, Boolean) = sudokuTable(row)(column)
+    sudokuTable(row).update(column, (input, previousValue._2))
+
     changeBoardFieldsGUI(row, column, input)
   }
 
@@ -325,32 +268,32 @@ object ChangeSudokuBoard extends Sudoku {
    * @param col
    */
   def filterRowAndColumn(row: Int, col: Int): Unit = {
-    val numberToFilterOut: Int = board(row)(col)
+    val numberToFilterOut: Int = sudokuTable(row)(col)._1
 
     def filterRow: Unit = {
       //Finding the column value of the number to filter
-      val colOfNumber = board(row).indexOf(numberToFilterOut)
+      val colOfNumber = sudokuTable(row).indexWhere(x => x._1 == numberToFilterOut)
       //Checking to see if the number exists in row
       if (colOfNumber != -1) {
-        board(row).update(colOfNumber, 0)
+        sudokuTable(row).update(colOfNumber, (0, false))
         changeBoardFieldsGUI(row, colOfNumber, 0)
 
         //Checking to see if there are more numbers in the same row
-        if (board(row).exists(x => x == numberToFilterOut))
+        if (sudokuTable(row).exists(x => x._1 == numberToFilterOut))
           filterRow
       }
     }
 
     def filterCol: Unit = {
-      val boardTransposed = board.transpose
-      val rowOfNumber = boardTransposed(col).indexOf(numberToFilterOut)
+      val boardTransposed = sudokuTable.transpose
+      val rowOfNumber = boardTransposed(col).indexWhere(x => x._1 == numberToFilterOut)
       //Checking to see if the number exists in column
       if (rowOfNumber != -1) {
-        board(rowOfNumber).update(col, 0)
+        sudokuTable(rowOfNumber).update(col, (0, false))
         changeBoardFieldsGUI(rowOfNumber, col, 0)
 
         //Checking to see if there are more numbers in the same row
-        if (boardTransposed(col).exists(x => x == numberToFilterOut))
+        if (boardTransposed(col).exists(x => x._1 == numberToFilterOut))
           filterCol
       }
     }
@@ -361,7 +304,7 @@ object ChangeSudokuBoard extends Sudoku {
       filterCol
       updateBoardAndFields(row, col, numberToFilterOut)
     }
-    checkSaveButton
+    checkSaveButton(newSudokuBoard)
   }
 
   /**
@@ -371,12 +314,12 @@ object ChangeSudokuBoard extends Sudoku {
    * @param col
    */
   def filterSubSquare(row: Int, col: Int): Unit = {
-    val numberToFilterOut: Int = board(row)(col)
+    val numberToFilterOut: Int = sudokuTable(row)(col)._1
     val rowOfSquare: Int = (row / 3) * 3
     val colOfSquare: Int = (col / 3) * 3
 
     def filterSquare: Unit = {
-      val squareFields: List[Int] = getAllFieldsFromSquare(board, row, col)
+      val squareFields: List[Int] = getAllFieldsFromSquare(row, col, getMatrixOfValue(sudokuTable))
       if (squareFields.exists(x => x == numberToFilterOut)) {
         val indexOfNum = squareFields.indexOf(numberToFilterOut)
 
@@ -398,7 +341,7 @@ object ChangeSudokuBoard extends Sudoku {
       //Putting back the original number
       updateBoardAndFields(row, col, numberToFilterOut)
     }
-    checkSaveButton
+    checkSaveButton(newSudokuBoard)
   }
 
   /**
@@ -415,14 +358,14 @@ object ChangeSudokuBoard extends Sudoku {
 
     def writeToFileFunction(row: Int, col: Int, el: Int) = {
       def writeElOfBoard(row: Int, col: Int) = {
-        if (board(row)(col) == 0){
+        if (sudokuTable(row)(col)._1 == 0){
           bw.write("-")
         } else {
-          bw.write(board(row)(col).toString)
+          bw.write(sudokuTable(row)(col)._1.toString)
         }
       }
 
-      val start = getStartingPosition
+      val start: (Int, Int) = positions.startingPosition
 
       (row, col) match  {
         case (r, c) if (r == start._1 && c == start._2) => {
@@ -437,9 +380,9 @@ object ChangeSudokuBoard extends Sudoku {
         }
       }
     }
-    def writeToFile: Matrix => Unit = changeBoard(writeToFileFunction)
+    def writeToFile: SudokuMatrix => Unit = changeBoard(writeToFileFunction)
 
-    writeToFile(board)
+    writeToFile(sudokuTable)
     bw.close()
   }
 
@@ -459,8 +402,8 @@ object ChangeSudokuBoard extends Sudoku {
    * @param reasonForAsking
    * @return
    */
-  private def getRowAndCol(reasonForAsking: String): (Int, Int) = {
-    val rowAndColString = Dialog.showInput(newSudokuBoard.contents.head, "Radi " + reasonForAsking + " dati broj reda i kolone u formi red,kolona (redovi i kolone se indeksiraju 0-8)" , initial="")
+  private def getRowAndCol(reasonForAsking: String, newSudokuBoardFrame: NewSudokuBoardFrame): (Int, Int) = {
+    val rowAndColString = Dialog.showInput(newSudokuBoardFrame.contents.head, "Radi " + reasonForAsking + " dati broj reda i kolone u formi red,kolona (redovi i kolone se indeksiraju 0-8)" , initial="")
     rowAndColString match {
       case Some(s) => {
         val rowAndCol: String = s.trim
@@ -471,19 +414,19 @@ object ChangeSudokuBoard extends Sudoku {
             if (rowAndColValues(0).toInt != 9 && rowAndColValues(1).toInt !=9)
               (rowAndColValues(0).toInt, rowAndColValues(1).toInt)
             else
-              getRowAndCol("tacnog unosa")
+              getRowAndCol("tacnog unosa", newSudokuBoardFrame)
           } else {
             // Not digits
-            getRowAndCol("tacnog unosa")
+            getRowAndCol("tacnog unosa", newSudokuBoardFrame)
           }
         }
         else {
-          getRowAndCol("tacnog unosa")
+          getRowAndCol("tacnog unosa", newSudokuBoardFrame)
         }
       }
       case None => {
         //If the user doesn't give a value, the function will take the currentPosition of game
-        (currentPosition._1, currentPosition._2)
+        (positions.currentPosition._1, positions.currentPosition._2)
       }
     }
   }
@@ -493,8 +436,8 @@ object ChangeSudokuBoard extends Sudoku {
    *
    * @return
    */
-  private def getNumberForInput: Int = {
-    val retrieve = Dialog.showInput(newSudokuBoard.contents.head, "Koji broj zelite da unesete", initial = "")
+  private def getNumberForInput(newSudokuBoardFrame: NewSudokuBoardFrame): Int = {
+    val retrieve = Dialog.showInput(newSudokuBoardFrame.contents.head, "Koji broj zelite da unesete", initial = "")
     retrieve match {
       case Some(s) => {
         val inputString: String = s.trim
@@ -505,14 +448,15 @@ object ChangeSudokuBoard extends Sudoku {
             inputValue
           } else {
             //Again because of bad formatting
-            getNumberForInput
+            getNumberForInput(newSudokuBoardFrame)
           }
         } else {
-          getNumberForInput
+          // Again because of non digit characters
+          getNumberForInput(newSudokuBoardFrame)
         }
       }
       case None => {
-        //return bad number to signal the program to ignore operation
+        //return a bad number to signal the program to ignore operation
         -1
       }
     }
@@ -527,7 +471,7 @@ object ChangeSudokuBoard extends Sudoku {
   def changeStartPositionWrapper(position: (Int, Int)): (Int, Int) = {
     println("change start position")
     if (position._1 == -1) {
-      val pos: (Int, Int) = getRowAndCol("PROMENE POCETNE POZICIJE")
+      val pos: (Int, Int) = getRowAndCol("PROMENE POCETNE POZICIJE", newSudokuBoard)
       //If wrong format than repeat process
       if (pos._1 == -1)
         changeStartPositionWrapper((-1, -1))
@@ -549,20 +493,20 @@ object ChangeSudokuBoard extends Sudoku {
   def inputNumberWrapper(position: (Int, Int)): (Int, Int) = {
     println("input number")
     if (position._1 == -1) {
-      val pos: (Int, Int) = getRowAndCol("UNOSA BROJA")
+      val pos: (Int, Int) = getRowAndCol("UNOSA BROJA", newSudokuBoard)
       //If wrong format than repeat process
       if (pos._1 == -1)
         inputNumberWrapper(-1, -1)
 
-      positionChange(pos._1, pos._2)
+      positions = positionChange(pos._1, pos._2, newSudokuBoard)
 
-      val numberForInput = getNumberForInput
+      val numberForInput = getNumberForInput(newSudokuBoard)
       //If number valid do operation, else ignore
       if (numberForInput != -1)
         inputNumber(numberForInput)
     } else{
 
-      val numberForInput = getNumberForInput
+      val numberForInput = getNumberForInput(newSudokuBoard)
       //If number valid do operation, else ignore
       if (numberForInput != -1)
         inputNumber(numberForInput)
@@ -581,13 +525,13 @@ object ChangeSudokuBoard extends Sudoku {
   def eraseNumberWrapper(position: (Int, Int)): (Int, Int) = {
     println("erase number")
     if (position._1 == -1) {
-      val pos: (Int, Int) = getRowAndCol("BRISANJE BROJA")
+      val pos: (Int, Int) = getRowAndCol("BRISANJE BROJA", newSudokuBoard)
       //If wrong format than repeat process
       if (pos._1 == -1) {
         eraseNumberWrapper((-1, -1))
       }
 
-      positionChange(pos._1, pos._2)
+      positions = positionChange(pos._1, pos._2, newSudokuBoard)
       // Applying the function to the new pos._1 and pos._2
       eraseNumber
     } else {
@@ -606,7 +550,7 @@ object ChangeSudokuBoard extends Sudoku {
   def filterRowAndColWrapper(position: (Int, Int)): (Int, Int) = {
     println("filter row and col")
     if (position._1 == -1) {
-      val pos: (Int, Int) = getRowAndCol("FILTRIRANJA REDOVA I KOLONA")
+      val pos: (Int, Int) = getRowAndCol("FILTRIRANJA REDOVA I KOLONA", newSudokuBoard)
       //If wrong format than repeat process
       if (pos._1 == -1) {
         filterRowAndColWrapper(-1, -1)
@@ -629,7 +573,7 @@ object ChangeSudokuBoard extends Sudoku {
   def filterSquareWrapper(position: (Int, Int)): (Int, Int) = {
     println("filter square")
     if (position._1 == -1) {
-      val pos: (Int, Int) = getRowAndCol("FILTRIRANJA KOCKE")
+      val pos: (Int, Int) = getRowAndCol("FILTRIRANJA KOCKE", newSudokuBoard)
       //If wrong format than repeat process
       if (pos._1 == -1) {
         filterSquareWrapper(-1, -1)
@@ -674,6 +618,26 @@ object ChangeSudokuBoard extends Sudoku {
 
   //-------------------------------- GUI Actions -------------------------------
 
+  def moveSingleStepUp: Positions = {
+    positions = positions.moveCurrentPositionUp
+    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  }
+
+  def moveSingleStepDown: Positions = {
+    positions = positions.moveCurrentPositionDown
+    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  }
+
+  def moveSingleStepRight: Positions = {
+    positions = positions.moveCurrentPositionRight
+    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  }
+
+  def moveSingleStepLeft: Positions = {
+    positions = positions.moveCurrentPositionLeft
+    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  }
+
   /**
    * Changing the numbers on the board
    *
@@ -687,13 +651,13 @@ object ChangeSudokuBoard extends Sudoku {
       if (input != 0) {
         new Action(input.toString) {
           override def apply(): Unit = {
-            positionChange(row, col)
+            positions = positionChange(row, col, newSudokuBoard)
           }
         }
       } else {
         new Action(" ") {
           override def apply(): Unit = {
-            positionChange(row, col)
+            positions = positionChange(row, col, newSudokuBoard)
           }
         }
       }
@@ -706,8 +670,8 @@ object ChangeSudokuBoard extends Sudoku {
   /**
    * Changing the background color of the start position
    */
-  def showStartPosition: Unit = {
-    newSudokuBoard.allSudokuFields(startPosition._1)(startPosition._2).background = GameLookConstants.lightGrayishLimeGreen
+  def showStartPosition(row: Int, col: Int, gameFrame: NewSudokuBoardFrame): Unit = {
+    gameFrame.allSudokuFields(row)(col).background = GameLookConstants.lightGrayishLimeGreen
   }
 
   /**
@@ -716,8 +680,8 @@ object ChangeSudokuBoard extends Sudoku {
    * @param row
    * @param col
    */
-  def restartButtonColor(row: Int, col: Int): Unit = {
-    newSudokuBoard.allSudokuFields(row)(col).background = GameLookConstants.white
+  def restartButtonColor(row: Int, col: Int, newSudokuBoardFrame: NewSudokuBoardFrame): Unit = {
+    newSudokuBoardFrame.allSudokuFields(row)(col).background = GameLookConstants.white
   }
 
   /**
@@ -726,13 +690,14 @@ object ChangeSudokuBoard extends Sudoku {
    * @param row
    * @param col
    */
-  override def positionChange(row: Int, col: Int): Unit = {
+  def positionChange(row: Int, col: Int, gameFrame: NewSudokuBoardFrame): Positions = {
+
     def setBoardColors = {
       def changeColor(r: Int, c: Int, color: Color) = {
         for (iter <- 0 to 8) {
           //returning the previous selection to normal color
-          newSudokuBoard.allSudokuFields(r)(iter).background = color
-          newSudokuBoard.allSudokuFields(iter)(c).background = color
+          gameFrame.allSudokuFields(r)(iter).background = color
+          gameFrame.allSudokuFields(iter)(c).background = color
         }
       }
       /**
@@ -748,24 +713,25 @@ object ChangeSudokuBoard extends Sudoku {
         for (r <- row until row + 3;
              c <- col until col + 3) {
           //returning the previous selection to normal color
-          newSudokuBoard.allSudokuFields(r)(c).background = color
+          gameFrame.allSudokuFields(r)(c).background = color
         }
       }
 
-      changeColor(currentPosition._1, currentPosition._2, GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR)
-      changeColorOfBox((currentPosition._1 / 3) * 3 + currentPosition._2 / 3, GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR)
+      changeColor(positions.currentPosition._1, positions.currentPosition._2, GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR)
+      changeColorOfBox((positions.currentPosition._1 / 3) * 3 + positions.currentPosition._2 / 3, GameLookConstants.UNSELECTED_BUTTON_BACKGROUND_COLOR)
 
       changeColor(row, col, GameLookConstants.SELECTED_BUTTON_AREA_BACKGROUND)
       changeColorOfBox((row / 3) * 3 + col / 3, GameLookConstants.SELECTED_BUTTON_AREA_BACKGROUND)
 
-      newSudokuBoard.allSudokuFields(row)(col).background = GameLookConstants.SELECTED_BUTTON_BACKGROUND_COLOR
+      gameFrame.allSudokuFields(row)(col).background = GameLookConstants.SELECTED_BUTTON_BACKGROUND_COLOR
     }
 
     setBoardColors
-    setCurrentPosition((row, col))
 
     //While the sudoku is in edit mode, the user can always see the start position
-    showStartPosition
+    showStartPosition(positions.startingPosition._1, positions.startingPosition._2, gameFrame)
+
+    positions.changeCurrentPosition(row, col)
   }
 
   /**
@@ -773,7 +739,7 @@ object ChangeSudokuBoard extends Sudoku {
    *
    * @param input
    */
-  override def inputNumber(input: Int): Unit = {
+  def inputNumber(input: Int): Unit = {
     /**
      * Inserting the given input into sudoku table
      *
@@ -781,14 +747,14 @@ object ChangeSudokuBoard extends Sudoku {
      */
     def insertNumberOnBoard: Int = {
       //Checking to see if the user inputs the same number as it already is on the sudoku board
-      if (board(currentPosition._1)(currentPosition._2) == input) {
+      if (sudokuTable(positions.currentPosition._1)(positions.currentPosition._2)._1 == input) {
         GameLookConstants.CODE_OK
       }
       else {
         //Updating the sudoku board and checking if the operation was valid
         //this order of calls must be held
-        val checkForMoveValidation = checkIfMoveCorrect(currentPosition._1, currentPosition._2, input)
-        board(currentPosition._1).update(currentPosition._2, input)
+        val checkForMoveValidation = checkIfMoveCorrect(positions.currentPosition._1, positions.currentPosition._2, input, getMatrixOfValue(sudokuTable))
+        sudokuTable(positions.currentPosition._1).update(positions.currentPosition._2, (input, false))
         if (checkForMoveValidation) {
           GameLookConstants.CODE_OK
         } else
@@ -798,37 +764,37 @@ object ChangeSudokuBoard extends Sudoku {
 
     //Change the board only if the current position is valid (the sudoku board isn't finished)
     val insertNumOnBoardValidation = insertNumberOnBoard
-    val curPosition: (Int, Int) = getCurrentPosition
+    val curPosition: (Int, Int) = positions.currentPosition
 
     //Changing the new input field
     changeBoardFieldsGUI(curPosition._1, curPosition._2, input)
 
     //Check to see if there were any errors and notify the user
     if (insertNumOnBoardValidation == GameLookConstants.CODE_WARNING) {
-      newSudokuBoard.messageOutput.append("WARNING: (" + currentPosition._1 + ", " + currentPosition._2 + ") The number " + input + " already exists" +
+      newSudokuBoard.messageOutput.append("WARNING: (" + positions.currentPosition._1 + ", " + positions.currentPosition._2 + ") The number " + input + " already exists" +
         "in the same row, column or square" + '\n')
     }
 
-    checkSaveButton
+    checkSaveButton(newSudokuBoard)
   }
 
   /**
    * Erase a number on the current position on the sudoku board
    */
-  override def eraseNumber: Unit = {
-    board(currentPosition._1).update(currentPosition._2, 0)
-    val curPosition: (Int, Int) = getCurrentPosition
+  def eraseNumber: Unit = {
+    sudokuTable(positions.currentPosition._1).update(positions.currentPosition._2, (0, false))
+    val curPosition: (Int, Int) = positions.currentPosition
 
     //Changing the new input field
     changeBoardFieldsGUI(curPosition._1, curPosition._2, 0)
 
-    checkSaveButton
+    checkSaveButton(newSudokuBoard)
   }
 
   /**
    * Closing all the currently opened windows
    */
-  override def closeWindows: Unit = {
+  def closeWindows: Unit = {
     newSudokuBoard.visible = false
     newSudokuBoard.mainOwner.visible = true
     newSudokuBoard.dispose()

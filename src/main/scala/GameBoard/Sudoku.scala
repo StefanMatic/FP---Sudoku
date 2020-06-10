@@ -1,52 +1,13 @@
 package GameBoard
 
 import scala.io.Source
-import scala.swing.Frame
 
 abstract class Sudoku {
   type Matrix = Array[Array[Int]]
 
   //Set sudoku board playing field
   val board  = Array.ofDim[Int](9,9)
-
-  var currentPosition: (Int, Int) = (0,0)
-  var startPosition: (Int, Int) = (0,0)
-
-  /**
-   * Getter for current position of player
-   *
-   * @return
-   */
-  def getCurrentPosition: (Int, Int) = {
-    currentPosition
-  }
-
-  /**
-   * Setter for current position of player
-   *
-   * @param newPosition
-   */
-  def setCurrentPosition(newPosition: (Int, Int)): Unit = {
-    currentPosition = newPosition
-  }
-
-  /**
-   * Getter for starting position of game
-   *
-   * @return
-   */
-  def getStartingPosition: (Int, Int) = {
-    startPosition
-  }
-
-  /**
-   * Setting the new start position
-   *
-   * @param newPosition
-   */
-  def setStartingPosition(newPosition: (Int, Int)): Unit = {
-    startPosition = newPosition
-  }
+  //var positions: Positions = new Positions((0,0), (0,0))
 
   /**
    *Displays the sudoku board
@@ -77,6 +38,7 @@ abstract class Sudoku {
     lines
   }
 
+  /*
   /**
    * ABSTRACT
    * Implementation of this method should fills out the sudoku from a file
@@ -84,6 +46,8 @@ abstract class Sudoku {
    * @param path
    */
   def fillSudoku(path: String): Unit
+
+   */
 
   //--------------------------- Chekers ------------------------------
 
@@ -164,28 +128,6 @@ abstract class Sudoku {
     checkRows && checkCols && checkSquare
   }
 
-  //------------ Movement of currentPosition by 1 step -----------------------------
-
-  def moveCurrentPositionUp: Unit = {
-    if (currentPosition._1 != 0) {
-      positionChange(currentPosition._1 - 1, currentPosition._2)
-    }
-  }
-
-  def moveCurrentPositionDown: Unit = {
-    if (currentPosition._1 != 8)
-      positionChange(currentPosition._1 + 1, currentPosition._2)
-  }
-
-  def moveCurrentPositionLeft: Unit = {
-    if (currentPosition._2 != 0)
-      positionChange(currentPosition._1, currentPosition._2 - 1)
-  }
-
-  def moveCurrentPositionRight: Unit = {
-    if (currentPosition._2 != 8)
-      positionChange(currentPosition._1, currentPosition._2 + 1)
-  }
 
   //-------------------------------- Actions -----------------------------------
 
@@ -244,7 +186,7 @@ abstract class Sudoku {
    * ABSTRACT
    * Implementation of this method should solve the current sudoku board
    */
-  def solveSudoku: Boolean
+  def solveSudoku(table: Matrix): Boolean
 
   //-------------------------------- GUI Actions -------------------------------
 
@@ -255,7 +197,7 @@ abstract class Sudoku {
    * @param row
    * @param col
    */
-  def positionChange (row: Int, col: Int): Unit
+  def positionChange (row: Int, col: Int): Positions
 
   /**
    * ABSTRACT

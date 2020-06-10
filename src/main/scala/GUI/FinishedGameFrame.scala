@@ -11,7 +11,7 @@ import scala.swing.event._
  * @param myStartFrame
  * @param myGameFrame
  */
-class FinishedGameFrame(val myStartFrame: Frame, val myGameFrame: GameFrame) extends Frame {
+class FinishedGameFrame(val myStartFrame: Frame, val myGameFrame: GameFrame, sudokuBoard: SudokuBoard) extends Frame {
   /**
    * Makes menu buttons with all the adjustments
    *
@@ -68,7 +68,7 @@ class FinishedGameFrame(val myStartFrame: Frame, val myGameFrame: GameFrame) ext
 
   reactions += {
     case ButtonClicked(`goBack`) => {
-      SudokuBoard.closeWindows
+      sudokuBoard.closeWindows
     }
   }
 

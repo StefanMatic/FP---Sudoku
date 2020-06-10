@@ -3,7 +3,6 @@ package GUI
 import GameBoard.{ChangeSudokuBoard, SudokuBoard}
 
 import scala.swing._
-import scala.swing.event._
 
 class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends Frame {
   val boxPanel = new BoxPanel(Orientation.Vertical)
@@ -36,12 +35,14 @@ class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends 
         override def apply(): Unit = {
           visible = false
           if (gameMode) {
-            SudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
-            SudokuBoard.setGameFrame(mainOwner)
+            new SudokuBoard("src/SudokuBoardExamples/" + f.getName, mainOwner)
+            //SudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
+            //SudokuBoard.setGameFrame(mainOwner)
           }
           else {
-            ChangeSudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
-            ChangeSudokuBoard.setGameFrame(mainOwner)
+            new ChangeSudokuBoard("src/SudokuBoardExamples/" + f.getName, mainOwner)
+            //ChangeSudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
+            //ChangeSudokuBoard.setGameFrame(mainOwner)
           }
         }
       }

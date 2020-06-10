@@ -5,7 +5,7 @@ import scala.swing.event._
 
 import GameBoard.SudokuBoard
 
-class GameFrame(val mainOwner: Frame) extends Frame {
+class GameFrame(val mainOwner: Frame, sudokuBoard: SudokuBoard) extends Frame {
   val allSudokuFields  = Array.ofDim[Button](9,9)
   val messageOutput = new TextArea()
 
@@ -63,13 +63,15 @@ class GameFrame(val mainOwner: Frame) extends Frame {
       if (col != 9){
         val newButton: Button = new Button()
         val newButtonAction: Action =
-          if (SudokuBoard.board(row)(col) != 0)
-            new Action(SudokuBoard.board(row)(col).toString) {
-              override def apply(): Unit = SudokuBoard.positionChange(row,col)
+          if (sudokuBoard.sudokuTable(row)(col)._1 != 0)
+            new Action(sudokuBoard.sudokuTable(row)(col)._1.toString) {
+              override def apply(): Unit =
+                sudokuBoard.positions = sudokuBoard.positionChange(row, col, GameFrame.this)
           }
           else {
             new Action(" ") {
-              override def apply(): Unit = SudokuBoard.positionChange(row,col)
+              override def apply(): Unit =
+                sudokuBoard.positions = sudokuBoard.positionChange(row, col, GameFrame.this)
             }
           }
 
@@ -121,12 +123,12 @@ class GameFrame(val mainOwner: Frame) extends Frame {
     reactions += {
       case KeyTyped(_, c, _, _) =>
         if ('1' <= c && c <= '9') {
-          SudokuBoard.inputNumber(c.asDigit)
+          sudokuBoard.inputNumber(c.asDigit)
         }
-      case KeyPressed(_, Key.Up, _, _) => SudokuBoard.moveCurrentPositionUp
-      case KeyPressed(_, Key.Down, _, _) => SudokuBoard.moveCurrentPositionDown
-      case KeyPressed(_, Key.Left, _, _) => SudokuBoard.moveCurrentPositionLeft
-      case KeyPressed(_, Key.Right, _, _) => SudokuBoard.moveCurrentPositionRight
+      case KeyPressed(_, Key.Up, _, _) => sudokuBoard.moveSingleStepUp
+      case KeyPressed(_, Key.Down, _, _) => sudokuBoard.moveSingleStepDown
+      case KeyPressed(_, Key.Left, _, _) => sudokuBoard.moveSingleStepLeft
+      case KeyPressed(_, Key.Right, _, _) => sudokuBoard.moveSingleStepRight
     }
 
     panel
@@ -192,16 +194,16 @@ class GameFrame(val mainOwner: Frame) extends Frame {
     listenTo(boxPanel.keys)
 
     reactions += {
-      case ButtonClicked(`numberOne`) => SudokuBoard.inputNumber(1)
-      case ButtonClicked(`numberTwo`) => SudokuBoard.inputNumber(2)
-      case ButtonClicked(`numberThree`) => SudokuBoard.inputNumber(3)
-      case ButtonClicked(`numberFour`) => SudokuBoard.inputNumber(4)
-      case ButtonClicked(`numberFive`) => SudokuBoard.inputNumber(5)
-      case ButtonClicked(`numberSix`) => SudokuBoard.inputNumber(6)
-      case ButtonClicked(`numberSeven`) => SudokuBoard.inputNumber(7)
-      case ButtonClicked(`numberEight`) => SudokuBoard.inputNumber(8)
-      case ButtonClicked(`numberNine`) => SudokuBoard.inputNumber(9)
-      case ButtonClicked(`erase`) => SudokuBoard.eraseNumber
+      case ButtonClicked(`numberOne`) => sudokuBoard.inputNumber(1)
+      case ButtonClicked(`numberTwo`) => sudokuBoard.inputNumber(2)
+      case ButtonClicked(`numberThree`) => sudokuBoard.inputNumber(3)
+      case ButtonClicked(`numberFour`) => sudokuBoard.inputNumber(4)
+      case ButtonClicked(`numberFive`) => sudokuBoard.inputNumber(5)
+      case ButtonClicked(`numberSix`) => sudokuBoard.inputNumber(6)
+      case ButtonClicked(`numberSeven`) => sudokuBoard.inputNumber(7)
+      case ButtonClicked(`numberEight`) => sudokuBoard.inputNumber(8)
+      case ButtonClicked(`numberNine`) => sudokuBoard.inputNumber(9)
+      case ButtonClicked(`erase`) => sudokuBoard.eraseNumber
     }
 
     boxPanel
@@ -230,7 +232,7 @@ class GameFrame(val mainOwner: Frame) extends Frame {
     listenTo(closeButton)
     reactions += {
       case ButtonClicked(`closeButton`) => {
-        SudokuBoard.closeWindows
+        sudokuBoard.closeWindows
       }
     }
 
@@ -280,10 +282,10 @@ class GameFrame(val mainOwner: Frame) extends Frame {
     listenTo(readInstructions, solveSudoku)
     reactions += {
       case ButtonClicked(`readInstructions`) => {
-        SudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
+        sudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
       }
       case ButtonClicked(`solveSudoku`) => {
-        SudokuBoard.solveSudoku
+        sudokuBoard.solveSudoku(sudokuBoard.sudokuTable)
       }
     }
     boxPanel.border = Swing.EmptyBorder(300,30,30,15)

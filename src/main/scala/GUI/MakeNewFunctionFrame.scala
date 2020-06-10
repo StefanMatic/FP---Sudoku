@@ -5,7 +5,7 @@ import GameBoard.ChangeSudokuBoard
 import scala.swing.event._
 import scala.swing._
 
-class MakeNewFunctionFrame(sequence: Boolean) extends Frame {
+class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoard) extends Frame {
   type FunctionWrapper = ((Int, Int)) => (Int, Int)
 
   var listOfFunctions: List[FunctionWrapper] = Nil
@@ -123,7 +123,7 @@ class MakeNewFunctionFrame(sequence: Boolean) extends Frame {
     reactions += {
       case ButtonClicked(`saveFunction`) => {
         if (listOfFunctions.length != 0)
-          ChangeSudokuBoard.addFunctionToList(functionName.text, makeAndSendFunction)
+          changeSudokuBoard.addFunctionToList(functionName.text, makeAndSendFunction)
         dispose()
       }
       case ButtonClicked(`closeFrame`) => {
@@ -142,7 +142,7 @@ class MakeNewFunctionFrame(sequence: Boolean) extends Frame {
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
     //Making all the functions made in this session
-    for (func <- ChangeSudokuBoard.functionList) {
+    for (func <- changeSudokuBoard.functionList) {
       //composite
       if (!sequence) {
         //Skipping over all sequence function when in COMPOSITE MODE

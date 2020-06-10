@@ -5,7 +5,7 @@ import GameBoard.ChangeSudokuBoard
 import scala.swing.event._
 import scala.swing._
 
-class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
+class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuBoard) extends Frame {
   val allSudokuFields  = Array.ofDim[Button](9,9)
   val messageOutput = new TextArea()
   val saveSudoku = makeButtonNumbersFont("SAVE")
@@ -40,14 +40,14 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     listenTo(newButton)
     reactions += {
       case ButtonClicked(`newButton`) => {
-        ChangeSudokuBoard.executeFunctionList(func)
+        changeSudokuBoard.executeFunctionList(func)
       }
     }
 
     funcPanel.repaint()
     westNoxPanel.repaint()
 
-    ChangeSudokuBoard.addedFunctionMessage
+    changeSudokuBoard.addedFunctionMessage
   }
 
   /**
@@ -92,13 +92,15 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
       if (col != 9){
         val newButton: Button = new Button()
         val newButtonAction: Action =
-          if (ChangeSudokuBoard.board(row)(col) != 0)
-            new Action(ChangeSudokuBoard.board(row)(col).toString) {
-              override def apply(): Unit = ChangeSudokuBoard.positionChange(row,col)
+          if (changeSudokuBoard.sudokuTable(row)(col)._1 != 0)
+            new Action(changeSudokuBoard.sudokuTable(row)(col)._1.toString) {
+              override def apply(): Unit =
+                changeSudokuBoard.positions = changeSudokuBoard.positionChange(row, col, NewSudokuBoardFrame.this)
             }
           else {
             new Action(" ") {
-              override def apply(): Unit = ChangeSudokuBoard.positionChange(row,col)
+              override def apply(): Unit =
+                changeSudokuBoard.positions = changeSudokuBoard.positionChange(row, col, NewSudokuBoardFrame.this)
             }
           }
 
@@ -150,12 +152,12 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     reactions += {
       case KeyTyped(_, c, _, _) =>
         if ('1' <= c && c <= '9') {
-          ChangeSudokuBoard.inputNumber(c.asDigit)
+          changeSudokuBoard.inputNumber(c.asDigit)
         }
-      case KeyPressed(_, Key.Up, _, _) => ChangeSudokuBoard.moveCurrentPositionUp
-      case KeyPressed(_, Key.Down, _, _) => ChangeSudokuBoard.moveCurrentPositionDown
-      case KeyPressed(_, Key.Left, _, _) => ChangeSudokuBoard.moveCurrentPositionLeft
-      case KeyPressed(_, Key.Right, _, _) => ChangeSudokuBoard.moveCurrentPositionRight
+      case KeyPressed(_, Key.Up, _, _) => changeSudokuBoard.moveSingleStepUp
+      case KeyPressed(_, Key.Down, _, _) => changeSudokuBoard.moveSingleStepDown
+      case KeyPressed(_, Key.Left, _, _) => changeSudokuBoard.moveSingleStepLeft
+      case KeyPressed(_, Key.Right, _, _) => changeSudokuBoard.moveSingleStepRight
     }
 
     panel
@@ -210,15 +212,15 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     listenTo(boxPanel.keys)
 
     reactions += {
-      case ButtonClicked(`numberOne`) => ChangeSudokuBoard.inputNumber(1)
-      case ButtonClicked(`numberTwo`) => ChangeSudokuBoard.inputNumber(2)
-      case ButtonClicked(`numberThree`) => ChangeSudokuBoard.inputNumber(3)
-      case ButtonClicked(`numberFour`) => ChangeSudokuBoard.inputNumber(4)
-      case ButtonClicked(`numberFive`) => ChangeSudokuBoard.inputNumber(5)
-      case ButtonClicked(`numberSix`) => ChangeSudokuBoard.inputNumber(6)
-      case ButtonClicked(`numberSeven`) => ChangeSudokuBoard.inputNumber(7)
-      case ButtonClicked(`numberEight`) => ChangeSudokuBoard.inputNumber(8)
-      case ButtonClicked(`numberNine`) => ChangeSudokuBoard.inputNumber(9)
+      case ButtonClicked(`numberOne`) => changeSudokuBoard.inputNumber(1)
+      case ButtonClicked(`numberTwo`) => changeSudokuBoard.inputNumber(2)
+      case ButtonClicked(`numberThree`) => changeSudokuBoard.inputNumber(3)
+      case ButtonClicked(`numberFour`) => changeSudokuBoard.inputNumber(4)
+      case ButtonClicked(`numberFive`) => changeSudokuBoard.inputNumber(5)
+      case ButtonClicked(`numberSix`) => changeSudokuBoard.inputNumber(6)
+      case ButtonClicked(`numberSeven`) => changeSudokuBoard.inputNumber(7)
+      case ButtonClicked(`numberEight`) => changeSudokuBoard.inputNumber(8)
+      case ButtonClicked(`numberNine`) => changeSudokuBoard.inputNumber(9)
       // case ButtonClicked(`erase`) => ChangeSudokuBoard.eraseNumber
     }
 
@@ -238,7 +240,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     listenTo(closeButton)
     reactions += {
       case ButtonClicked(`closeButton`) => {
-        ChangeSudokuBoard.closeWindows
+        changeSudokuBoard.closeWindows
       }
     }
 
@@ -266,7 +268,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
 
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
-    for (func <- ChangeSudokuBoard.functionList) {
+    for (func <- changeSudokuBoard.functionList) {
       val newButton = makeButtonNumbersFont(func._1.toUpperCase)
 
       boxPanel.contents += Swing.VStrut(10)
@@ -275,7 +277,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
       listenTo(newButton)
       reactions += {
         case ButtonClicked(`newButton`) => {
-          ChangeSudokuBoard.executeFunctionList(func._2)
+          changeSudokuBoard.executeFunctionList(func._2)
         }
       }
     }
@@ -305,7 +307,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     sudokuName.listenTo(sudokuName.keys)
     sudokuName.reactions += {
       case e: KeyTyped => {
-        ChangeSudokuBoard.checkSaveButton
+        changeSudokuBoard.checkSaveButton(NewSudokuBoardFrame.this)
       }
     }
 
@@ -320,9 +322,9 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     listenTo(saveSudoku)
     reactions += {
       case ButtonClicked(`saveSudoku`) => {
-        ChangeSudokuBoard.saveNewBoard
+        changeSudokuBoard.saveNewBoard
         Dialog.showMessage(contents.head, "The new sudoku table is saved", title="SAVED!")
-        ChangeSudokuBoard.closeWindows
+        changeSudokuBoard.closeWindows
       }
     }
 
@@ -351,9 +353,9 @@ class NewSudokuBoardFrame(val mainOwner: Frame) extends Frame {
     listenTo(compositeFunction, sequenceFunction)
     reactions += {
       case ButtonClicked(`compositeFunction`) =>
-        new MakeNewFunctionFrame(false)
+        new MakeNewFunctionFrame(false, changeSudokuBoard)
       case ButtonClicked(`sequenceFunction`) =>
-        new MakeNewFunctionFrame(true)
+        new MakeNewFunctionFrame(true, changeSudokuBoard)
     }
 
     boxPanel.background = GameLookConstants.GAME_BACKGROUND
