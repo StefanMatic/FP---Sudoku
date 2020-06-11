@@ -8,8 +8,6 @@ import scala.swing._
 class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoard) extends Frame {
   type FunctionWrapper = ((Int, Int)) => (Int, Int)
 
-  var listOfFunctions: List[FunctionWrapper] = Nil
-
   val messageBoard: TextArea = new TextArea()
   val saveFunction: Button = makeButtons("SAVE")
   val closeFrame: Button = makeButtons("CLOSE")
@@ -24,7 +22,8 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
    */
   def addToList(name: String, func: List[FunctionWrapper]): Unit = {
     messageBoard.append(name + '\n')
-    listOfFunctions = listOfFunctions ::: func
+    changeSudokuBoard.userFunctions.addFunctions(func)
+    //listOfFunctions = listOfFunctions ::: func
   }
 
   /**
@@ -34,21 +33,9 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
    */
   def makeAndSendFunction: List[FunctionWrapper] = {
     if (sequence){
-      listOfFunctions
+      changeSudokuBoard.userFunctions.makeSequenceFunction
     } else {
-      def makeCompose(f: FunctionWrapper, g: FunctionWrapper): FunctionWrapper = {
-        f andThen g
-      }
-      //Making a dummy function as an accumulator
-      def dummyFunc: FunctionWrapper = {
-        def dummy(pos: (Int, Int)): (Int, Int) = {
-          pos
-        }
-        dummy
-      }
-
-      val compositeFunction: FunctionWrapper = listOfFunctions.foldLeft(dummyFunc)(makeCompose)
-      List(compositeFunction)
+      changeSudokuBoard.userFunctions.makeCompositeFunction
     }
   }
 
@@ -122,8 +109,11 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
     listenTo(saveFunction, closeFrame)
     reactions += {
       case ButtonClicked(`saveFunction`) => {
-        if (listOfFunctions.length != 0)
+        if (changeSudokuBoard.userFunctions.functions.length != 0)
           changeSudokuBoard.addFunctionToList(functionName.text, makeAndSendFunction)
+        else
+          changeSudokuBoard.userFunctions.noFunction
+
         dispose()
       }
       case ButtonClicked(`closeFrame`) => {
@@ -142,7 +132,7 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
     //Making all the functions made in this session
-    for (func <- changeSudokuBoard.functionList) {
+    for (func <- changeSudokuBoard.userFunctions.functionList) {
       //composite
       if (!sequence) {
         //Skipping over all sequence function when in COMPOSITE MODE
@@ -215,7 +205,7 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
   title = "NEW FUNCTIONS"
 
   //Creating menu title
-  val header: Label = new Label("NOVA FUNKCIJA")
+  val header: Label = new Label("CUSTOM FUNCTION")
   header.xLayoutAlignment = 0.5f
   header.foreground = GameLookConstants.MENU_TITLE
   header.font = GameLookConstants.MENU_TITLE_FONT

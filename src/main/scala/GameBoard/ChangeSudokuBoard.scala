@@ -17,7 +17,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
   val sudokuTable: SudokuMatrix = fillSudoku(path)
   var positions: Positions = findStartPosition(sudokuTable)
 
-  var functionList: FunctionListType = makeInitFunctionButtons
+  val userFunctions: CustomFunctions = new CustomFunctions(this)
   val newSudokuBoard: NewSudokuBoardFrame = setGameFrame(mainOwner)
 
   /**
@@ -29,7 +29,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
     val newBoard = new NewSudokuBoardFrame(mainOwner, this)
     //setting the start position for the beginning of the game
 
-    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newBoard)
+    callPositionChange(positions.currentPosition._1, positions.currentPosition._2, newBoard)
     checkSaveButton(newBoard)
 
     newBoard
@@ -146,30 +146,14 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
   //----------------------------- Table functions ------------------------------
 
   /**
-   * Making initial list of basic board manipulation functions
-   *
-   * @return
-   */
-  def makeInitFunctionButtons: FunctionListType = {
-    val list1 = ("Input number", List[FunctionWrapper](inputNumberWrapper))
-    val list2 = ("Erase number", List[FunctionWrapper](eraseNumberWrapper))
-    val list3 = ("Change start position", List[FunctionWrapper](changeStartPositionWrapper))
-    val list4 = ("Filter row and column", List[FunctionWrapper](filterRowAndColWrapper))
-    val list5 = ("Filter square", List[FunctionWrapper](filterSquareWrapper))
-    val list6 = ("Transpose", List[FunctionWrapper](transposeWrapper))
-    val list7 = ("Change up", List[FunctionWrapper](changeUpWrapper))
-
-    list1 :: list2 :: list3 :: list4 :: list5 :: list6 :: list7 :: Nil
-  }
-
-  /**
    * After making a new sequence or composite function, this method adds the function to the global list
    *
    * @param functionName
    * @param funcList
    */
   def addFunctionToList(functionName: String, funcList: List[FunctionWrapper]) = {
-    functionList = functionList ::: List((functionName, funcList))
+    userFunctions.addFunctionToList(functionName, funcList)
+    //functionList = functionList ::: List((functionName, funcList))
     newSudokuBoard.addFunction(functionName, funcList)
   }
 
@@ -191,19 +175,6 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
     }
   }
 
-  /**
-   * Checking to see if the save new sudoku board is enabled or disabled
-   */
-  def checkSaveButton(newSudokuBoardFrame: NewSudokuBoardFrame): Unit = {
-    val sudokuName: String = newSudokuBoardFrame.sudokuName.text
-
-    //Checking if the sudoku board is solvable and if the user gave a name for the new table
-    if (solveSudoku && !sudokuName.equals("")){
-      newSudokuBoardFrame.saveSudoku.enabled = true
-    } else {
-      newSudokuBoardFrame.saveSudoku.enabled = false
-    }
-  }
 
   /**
    * Transposition the sudoku board
@@ -216,7 +187,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
     changeBoardGUI(sudokuTable)
 
     //Setting the board colors in the previous order
-    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+    callPositionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
     checkSaveButton(newSudokuBoard)
   }
 
@@ -231,7 +202,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
 
     changeBoardGUI(sudokuTable)
     //Setting the board colors in the previous order
-    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+    callPositionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
     checkSaveButton(newSudokuBoard)
   }
 
@@ -244,7 +215,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
   def changeStartingPosition(row: Int, col: Int): Unit = {
     restartButtonColor(positions.startingPosition._1, positions.startingPosition._2, newSudokuBoard)
     positions = positions.changeStartingPosition(row, col)
-    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+    callPositionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
   }
 
   /**
@@ -498,7 +469,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
       if (pos._1 == -1)
         inputNumberWrapper(-1, -1)
 
-      positions = positionChange(pos._1, pos._2, newSudokuBoard)
+      callPositionChange(pos._1, pos._2, newSudokuBoard)
 
       val numberForInput = getNumberForInput(newSudokuBoard)
       //If number valid do operation, else ignore
@@ -531,7 +502,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
         eraseNumberWrapper((-1, -1))
       }
 
-      positions = positionChange(pos._1, pos._2, newSudokuBoard)
+      callPositionChange(pos._1, pos._2, newSudokuBoard)
       // Applying the function to the new pos._1 and pos._2
       eraseNumber
     } else {
@@ -618,24 +589,24 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
 
   //-------------------------------- GUI Actions -------------------------------
 
-  def moveSingleStepUp: Positions = {
-    positions = positions.moveCurrentPositionUp
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  def moveSingleStepUp: Unit = {
+    val pos: Positions = positions.moveCurrentPositionUp
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
   }
 
-  def moveSingleStepDown: Positions = {
-    positions = positions.moveCurrentPositionDown
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  def moveSingleStepDown: Unit = {
+    val pos: Positions = positions.moveCurrentPositionDown
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
   }
 
-  def moveSingleStepRight: Positions = {
-    positions = positions.moveCurrentPositionRight
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  def moveSingleStepRight: Unit = {
+    val pos: Positions = positions.moveCurrentPositionRight
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
   }
 
-  def moveSingleStepLeft: Positions = {
-    positions = positions.moveCurrentPositionLeft
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, newSudokuBoard)
+  def moveSingleStepLeft: Unit = {
+    val pos: Positions = positions.moveCurrentPositionLeft
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
   }
 
   /**
@@ -651,13 +622,13 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
       if (input != 0) {
         new Action(input.toString) {
           override def apply(): Unit = {
-            positions = positionChange(row, col, newSudokuBoard)
+            callPositionChange(row, col, newSudokuBoard)
           }
         }
       } else {
         new Action(" ") {
           override def apply(): Unit = {
-            positions = positionChange(row, col, newSudokuBoard)
+            callPositionChange(row, col, newSudokuBoard)
           }
         }
       }
@@ -685,12 +656,23 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
   }
 
   /**
+   * Centralizing use of side-effect on position change
+   *
+   * @param row
+   * @param col
+   * @param newSudokuBoardFrame
+   */
+  def callPositionChange(row: Int, col: Int, newSudokuBoardFrame: NewSudokuBoardFrame): Unit = {
+    positions = positionChange(row, col, newSudokuBoardFrame)
+  }
+
+  /**
    * Changes the sudoku table in real time in response to user movement on the sudoku field
    *
    * @param row
    * @param col
    */
-  def positionChange(row: Int, col: Int, gameFrame: NewSudokuBoardFrame): Positions = {
+  private def positionChange(row: Int, col: Int, gameFrame: NewSudokuBoardFrame): Positions = {
 
     def setBoardColors = {
       def changeColor(r: Int, c: Int, color: Color) = {
@@ -789,6 +771,20 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
     changeBoardFieldsGUI(curPosition._1, curPosition._2, 0)
 
     checkSaveButton(newSudokuBoard)
+  }
+
+  /**
+   * Checking to see if the save new sudoku board is enabled or disabled
+   */
+  def checkSaveButton(newSudokuBoardFrame: NewSudokuBoardFrame): Unit = {
+    val sudokuName: String = newSudokuBoardFrame.sudokuName.text
+
+    //Checking if the sudoku board is solvable and if the user gave a name for the new table
+    if (solveSudoku && !sudokuName.equals("")){
+      newSudokuBoardFrame.saveSudoku.enabled = true
+    } else {
+      newSudokuBoardFrame.saveSudoku.enabled = false
+    }
   }
 
   /**

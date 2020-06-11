@@ -29,7 +29,7 @@ class SudokuBoard(path: String, mainOwner: Frame) {
 
     val myGameFrame = new GameFrame(mainOwner, this)
     //setting the first position for the beginning of the game
-    positions = positionChange(positions.currentPosition._1, positions.currentPosition._2, myGameFrame)
+    callPositionChange(positions.currentPosition._1, positions.currentPosition._2, myGameFrame)
 
     myGameFrame
   }
@@ -68,19 +68,19 @@ class SudokuBoard(path: String, mainOwner: Frame) {
     def goThroughChars(fieldValues: List[Char]): Unit ={
       fieldValues match {
         case x :: xs if (x == 'd') => {
-          positions = positions.moveCurrentPositionDown
+          moveSingleStepDown
           goThroughChars(xs)
         }
         case x :: xs if (x == 'u')=>{
-          positions = positions.moveCurrentPositionUp
+          moveSingleStepUp
           goThroughChars(xs)
         }
         case x :: xs if (x == 'l') => {
-          positions = positions.moveCurrentPositionLeft
+          moveSingleStepLeft
           goThroughChars(xs)
         }
         case x :: xs if (x == 'r')=>{
-          positions = positions.moveCurrentPositionRight
+          moveSingleStepRight
           goThroughChars(xs)
         }
         case x :: xs if (x >= '1' && x <= '9')=>{
@@ -213,7 +213,7 @@ class SudokuBoard(path: String, mainOwner: Frame) {
         def goThroughAllEntries(possibilities: List[(Int, Int)]): Boolean = {
           if (possibilities.length == 1) {
             //After we found a certain move, me make the adjustments to the board
-            positions = positionChange(possibilities.head._1, possibilities.head._2, gameFrame)
+            callPositionChange(possibilities.head._1, possibilities.head._2, gameFrame)
             inputNumber(currentNumber + 1)
 
             //Writing in the new number
@@ -277,24 +277,35 @@ class SudokuBoard(path: String, mainOwner: Frame) {
 
   //-------------------------------- GUI Actions -------------------------------
 
-  def moveSingleStepUp: Positions = {
-    positions = positions.moveCurrentPositionUp
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, gameFrame)
+  def moveSingleStepUp: Unit = {
+    val pos: Positions = positions.moveCurrentPositionUp
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
   }
 
-  def moveSingleStepDown: Positions = {
-    positions = positions.moveCurrentPositionDown
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, gameFrame)
+  def moveSingleStepDown: Unit = {
+    val pos: Positions = positions.moveCurrentPositionDown
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
   }
 
-  def moveSingleStepRight: Positions = {
-    positions = positions.moveCurrentPositionRight
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, gameFrame)
+  def moveSingleStepRight: Unit = {
+    val pos: Positions = positions.moveCurrentPositionRight
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
   }
 
-  def moveSingleStepLeft: Positions = {
-    positions = positions.moveCurrentPositionLeft
-    positionChange(positions.currentPosition._1, positions.currentPosition._2, gameFrame)
+  def moveSingleStepLeft: Unit = {
+    val pos: Positions = positions.moveCurrentPositionLeft
+    callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
+  }
+
+  /**
+   * Centralising the use of side-effect of position change
+   *
+   * @param row
+   * @param col
+   * @param gameFrame
+   */
+  def callPositionChange(row: Int, col:Int, gameFrame: GameFrame): Unit = {
+    positions = positionChange(row, col, gameFrame)
   }
 
   /**
@@ -376,7 +387,7 @@ class SudokuBoard(path: String, mainOwner: Frame) {
         //Changing the new input field
         gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(input.toString) {
           override def apply(): Unit = {
-            positions = positionChange(currentPosition._1, currentPosition._2, gameFrame)
+            callPositionChange(currentPosition._1, currentPosition._2, gameFrame)
           }
         }
         //Changing the color of the foreground, so the user knows which numbers have manually been set
@@ -410,7 +421,7 @@ class SudokuBoard(path: String, mainOwner: Frame) {
         //Changing the new input field
         gameFrame.allSudokuFields(currentPosition._1)(currentPosition._2).action = new Action(" ") {
           override def apply(): Unit = {
-            positions = positionChange(currentPosition._1, currentPosition._2, gameFrame)
+            callPositionChange(currentPosition._1, currentPosition._2, gameFrame)
           }
         }
       }

@@ -5,7 +5,8 @@ import scala.io.Source
 package object GameBoard {
   type Matrix = Array[Array[Int]]
   type SudokuMatrix = Array[Array[(Int, Boolean)]]
-
+  type FunctionWrapper = ((Int, Int)) => (Int, Int)
+  type FunctionListType = List[(String, List[FunctionWrapper])]
 
   // ----------------------- IO Actions --------------------------------
 
@@ -92,7 +93,6 @@ package object GameBoard {
 
     //Calling the start first method to start the filling of the sudoku wield with the index of the first row
     fillOutSudokuRows(allRows, 0)
-    println(mySudokuMatrix.map(col => col mkString(" ")).mkString("\n"))
 
     mySudokuMatrix
   }

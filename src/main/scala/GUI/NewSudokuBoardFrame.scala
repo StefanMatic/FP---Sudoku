@@ -95,12 +95,12 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
           if (changeSudokuBoard.sudokuTable(row)(col)._1 != 0)
             new Action(changeSudokuBoard.sudokuTable(row)(col)._1.toString) {
               override def apply(): Unit =
-                changeSudokuBoard.positions = changeSudokuBoard.positionChange(row, col, NewSudokuBoardFrame.this)
+                changeSudokuBoard.callPositionChange(row, col, NewSudokuBoardFrame.this)
             }
           else {
             new Action(" ") {
               override def apply(): Unit =
-                changeSudokuBoard.positions = changeSudokuBoard.positionChange(row, col, NewSudokuBoardFrame.this)
+                changeSudokuBoard.callPositionChange(row, col, NewSudokuBoardFrame.this)
             }
           }
 
@@ -268,7 +268,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
 
     val boxPanel = new BoxPanel(Orientation.Vertical)
 
-    for (func <- changeSudokuBoard.functionList) {
+    for (func <- changeSudokuBoard.userFunctions.functionList) {
       val newButton = makeButtonNumbersFont(func._1.toUpperCase)
 
       boxPanel.contents += Swing.VStrut(10)
