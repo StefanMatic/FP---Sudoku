@@ -623,12 +623,14 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
         new Action(input.toString) {
           override def apply(): Unit = {
             callPositionChange(row, col, newSudokuBoard)
+            newSudokuBoard.centerBoxPanel.requestFocus()
           }
         }
       } else {
         new Action(" ") {
           override def apply(): Unit = {
             callPositionChange(row, col, newSudokuBoard)
+            newSudokuBoard.centerBoxPanel.requestFocus()
           }
         }
       }

@@ -65,13 +65,17 @@ class GameFrame(val mainOwner: Frame, sudokuBoard: SudokuBoard) extends Frame {
         val newButtonAction: Action =
           if (sudokuBoard.sudokuTable(row)(col)._1 != 0)
             new Action(sudokuBoard.sudokuTable(row)(col)._1.toString) {
-              override def apply(): Unit =
-                sudokuBoard.positions = sudokuBoard.positionChange(row, col, GameFrame.this)
-          }
+              override def apply(): Unit = {
+                sudokuBoard.callPositionChange(row, col, GameFrame.this)
+                sudokuTab.requestFocus()
+              }
+            }
           else {
             new Action(" ") {
-              override def apply(): Unit =
-                sudokuBoard.positions = sudokuBoard.positionChange(row, col, GameFrame.this)
+              override def apply(): Unit = {
+                sudokuBoard.callPositionChange(row, col, GameFrame.this)
+                sudokuTab.requestFocus()
+              }
             }
           }
 
@@ -116,6 +120,7 @@ class GameFrame(val mainOwner: Frame, sudokuBoard: SudokuBoard) extends Frame {
 
     panel.border = Swing.EmptyBorder(30,30,30,30)
     panel.background = GameLookConstants.GAME_BACKGROUND
+
     panel.focusable = true
     panel.requestFocus()
 
@@ -193,17 +198,26 @@ class GameFrame(val mainOwner: Frame, sudokuBoard: SudokuBoard) extends Frame {
     //keyboard handlers
     listenTo(boxPanel.keys)
 
+    def buttonClickedInput(input: Int): Unit = {
+      sudokuBoard.inputNumber(input)
+      sudokuTab.requestFocus()
+    }
+
     reactions += {
-      case ButtonClicked(`numberOne`) => sudokuBoard.inputNumber(1)
-      case ButtonClicked(`numberTwo`) => sudokuBoard.inputNumber(2)
-      case ButtonClicked(`numberThree`) => sudokuBoard.inputNumber(3)
-      case ButtonClicked(`numberFour`) => sudokuBoard.inputNumber(4)
-      case ButtonClicked(`numberFive`) => sudokuBoard.inputNumber(5)
-      case ButtonClicked(`numberSix`) => sudokuBoard.inputNumber(6)
-      case ButtonClicked(`numberSeven`) => sudokuBoard.inputNumber(7)
-      case ButtonClicked(`numberEight`) => sudokuBoard.inputNumber(8)
-      case ButtonClicked(`numberNine`) => sudokuBoard.inputNumber(9)
-      case ButtonClicked(`erase`) => sudokuBoard.eraseNumber
+      case ButtonClicked(`numberOne`) => buttonClickedInput(1)
+      case ButtonClicked(`numberTwo`) => buttonClickedInput(2)
+      case ButtonClicked(`numberThree`) => buttonClickedInput(3)
+      case ButtonClicked(`numberFour`) => buttonClickedInput(4)
+      case ButtonClicked(`numberFive`) => buttonClickedInput(5)
+      case ButtonClicked(`numberSix`) => buttonClickedInput(6)
+      case ButtonClicked(`numberSeven`) => buttonClickedInput(7)
+      case ButtonClicked(`numberEight`) => buttonClickedInput(8)
+      case ButtonClicked(`numberNine`) => buttonClickedInput(9)
+      case ButtonClicked(`erase`) => {
+        sudokuBoard.eraseNumber
+        sudokuTab.requestFocus()
+      }
+
     }
 
     boxPanel
@@ -283,9 +297,11 @@ class GameFrame(val mainOwner: Frame, sudokuBoard: SudokuBoard) extends Frame {
     reactions += {
       case ButtonClicked(`readInstructions`) => {
         sudokuBoard.readInstructionsFromFile("src/SudokuInstructons/ins.txt")
+        sudokuTab.requestFocus()
       }
       case ButtonClicked(`solveSudoku`) => {
         sudokuBoard.solveSudoku(sudokuBoard.sudokuTable)
+        sudokuTab.requestFocus()
       }
     }
     boxPanel.border = Swing.EmptyBorder(300,30,30,15)
@@ -296,9 +312,11 @@ class GameFrame(val mainOwner: Frame, sudokuBoard: SudokuBoard) extends Frame {
 
   title = "Game"
 
+  val sudokuTab: GridPanel = sudokuTable
+
   //main panel
   val mainPanel = new BorderPanel(){
-    add(sudokuTable, BorderPanel.Position.Center)
+    add(sudokuTab, BorderPanel.Position.Center)
     add(numberPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
     add(functionsPanel, BorderPanel.Position.West)

@@ -41,6 +41,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
     reactions += {
       case ButtonClicked(`newButton`) => {
         changeSudokuBoard.executeFunctionList(func)
+        centerBoxPanel.requestFocus()
       }
     }
 
@@ -94,13 +95,17 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
         val newButtonAction: Action =
           if (changeSudokuBoard.sudokuTable(row)(col)._1 != 0)
             new Action(changeSudokuBoard.sudokuTable(row)(col)._1.toString) {
-              override def apply(): Unit =
+              override def apply(): Unit = {
                 changeSudokuBoard.callPositionChange(row, col, NewSudokuBoardFrame.this)
+                centerBoxPanel.requestFocus()
+              }
             }
           else {
             new Action(" ") {
-              override def apply(): Unit =
+              override def apply(): Unit = {
                 changeSudokuBoard.callPositionChange(row, col, NewSudokuBoardFrame.this)
+                centerBoxPanel.requestFocus()
+              }
             }
           }
 
@@ -278,6 +283,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
       reactions += {
         case ButtonClicked(`newButton`) => {
           changeSudokuBoard.executeFunctionList(func._2)
+          centerBoxPanel.requestFocus()
         }
       }
     }
@@ -333,7 +339,11 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
 
     boxPanel
   }
-
+  /**
+   * Creating buttons for activation of the custom function making
+   *
+   * @return
+   */
   def functionMaker: BoxPanel = {
     val boxPanel = new BoxPanel(Orientation.Horizontal)
 
@@ -365,7 +375,6 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
   title = "Make new sudoku table"
 
   val westNoxPanel = new ScrollPane(funcPanel)
-
   val northBoxPanel = new BoxPanel(Orientation.Vertical)
   northBoxPanel.contents += sudokuNameAndSave
   northBoxPanel.contents += Swing.VGlue
@@ -373,10 +382,12 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
   northBoxPanel.contents += Swing.VStrut(10)
 
   northBoxPanel.background = GameLookConstants.GAME_BACKGROUND
+
+  val centerBoxPanel: GridPanel = sudokuTable
   //main panel
   val mainPanel = new BorderPanel(){
     add(northBoxPanel, BorderPanel.Position.North)
-    add(sudokuTable, BorderPanel.Position.Center)
+    add(centerBoxPanel, BorderPanel.Position.Center)
     add(numPicker, BorderPanel.Position.East)
     add(messageOutputAndExit, BorderPanel.Position.South)
     add(westNoxPanel, BorderPanel.Position.West)

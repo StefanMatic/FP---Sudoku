@@ -23,7 +23,6 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
   def addToList(name: String, func: List[FunctionWrapper]): Unit = {
     messageBoard.append(name + '\n')
     changeSudokuBoard.userFunctions.addFunctions(func)
-    //listOfFunctions = listOfFunctions ::: func
   }
 
   /**
