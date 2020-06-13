@@ -36,13 +36,9 @@ class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends 
           visible = false
           if (gameMode) {
             new SudokuBoard("src/SudokuBoardExamples/" + f.getName, mainOwner)
-            //SudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
-            //SudokuBoard.setGameFrame(mainOwner)
           }
           else {
             new ChangeSudokuBoard("src/SudokuBoardExamples/" + f.getName, mainOwner)
-            //ChangeSudokuBoard.fillSudoku("src/SudokuBoardExamples/" + f.getName)
-            //ChangeSudokuBoard.setGameFrame(mainOwner)
           }
         }
       }

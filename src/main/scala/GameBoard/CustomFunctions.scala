@@ -1,10 +1,6 @@
 package GameBoard
 
 class CustomFunctions(changeSudokuBoard: ChangeSudokuBoard) {
-  //TODO: izbrisi type-ove kada zavrsis sa ovim
-  type FunctionWrapper = ((Int, Int)) => (Int, Int)
-  type FunctionListType = List[(String, List[FunctionWrapper])]
-
   var functionList: FunctionListType = makeInitFunctionButtons
   var functions: List[FunctionWrapper] = Nil
 

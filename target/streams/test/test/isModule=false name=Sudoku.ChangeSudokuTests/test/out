@@ -1,0 +1,18 @@
+[info] Test run started
+[info] Test Sudoku.ChangeSudokuTests.erase number from board started
+[debug] Test Sudoku.ChangeSudokuTests.erase number from board finished, took 2.215 sec
+[info] Test Sudoku.ChangeSudokuTests.input number on board started
+[debug] Test Sudoku.ChangeSudokuTests.input number on board finished, took 0.955 sec
+[info] Test Sudoku.ChangeSudokuTests.change start position started
+[debug] Test Sudoku.ChangeSudokuTests.change start position finished, took 0.474 sec
+[info] Test Sudoku.ChangeSudokuTests.trasposition started
+[debug] Test Sudoku.ChangeSudokuTests.trasposition finished, took 0.713 sec
+[info] Test Sudoku.ChangeSudokuTests.sudoku solvable started
+[debug] Test Sudoku.ChangeSudokuTests.sudoku solvable finished, took 0.651 sec
+[info] Test Sudoku.ChangeSudokuTests.filter row and column started
+[debug] Test Sudoku.ChangeSudokuTests.filter row and column finished, took 0.601 sec
+[info] Test Sudoku.ChangeSudokuTests.changeUp started
+[debug] Test Sudoku.ChangeSudokuTests.changeUp finished, took 1.956 sec
+[info] Test Sudoku.ChangeSudokuTests.filter square started
+[debug] Test Sudoku.ChangeSudokuTests.filter square finished, took 2.596 sec
+[info] Test run finished: 0 failed, 0 ignored, 8 total, 10.31s

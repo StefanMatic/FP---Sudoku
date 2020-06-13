@@ -1,0 +1,7 @@
+[debug] Running TaskDef(Sudoku.SudokuTests, com.novocode.junit.JUnitFingerprint@2fc3d07d, false, [SuiteSelector])
+[debug] Running TaskDef(Sudoku.ChangeSudokuTests, com.novocode.junit.JUnitFingerprint@2fc3d07d, false, [SuiteSelector])
+[debug] Summary for JUnit not available.
+[info] Passed: Total 20, Failed 0, Errors 0, Passed 20
+[debug] Passed tests:
+[debug] 	Sudoku.ChangeSudokuTests
+[debug] 	Sudoku.SudokuTests

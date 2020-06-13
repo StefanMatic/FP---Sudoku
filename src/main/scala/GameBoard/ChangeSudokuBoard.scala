@@ -195,7 +195,11 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
    * Making a new table in which every element is 9-current value
    */
   def changeUp: Unit = {
-    val manipulatedBoard = sudokuTable.map(col => col.map(el => (9 - el._1, el._2)))
+    val manipulatedBoard = sudokuTable.map(col => col.map(el =>
+      if (el._1 != 0)
+        (9 - el._1, el._2)
+      else
+        el))
     manipulatedBoard.copyToArray(sudokuTable)
 
     def changeBoardGUI: SudokuMatrix => Unit = changeBoard(changeBoardFieldsGUI)
@@ -800,7 +804,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
 
   def addedFunctionMessage:Unit = {
     Dialog.showMessage(newSudokuBoard.contents.head, "Function added!", title="New function")
-    changeUp
-    changeUp
+    transposition
+    transposition
   }
 }
