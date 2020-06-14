@@ -254,7 +254,6 @@ package object GameBoard {
     val myRow: Int = table.indexWhere(row => row.exists(el => el._1 == -1))
     val myCol: Int = table(myRow).indexWhere(x => x._1 == -1)
 
-    //TODO: Proveri da li lepo menja tabelu
     //updating the table
     table(myRow).update(myCol, (0, false))
 

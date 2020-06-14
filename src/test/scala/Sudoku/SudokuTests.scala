@@ -18,6 +18,9 @@ class SudokuTests {
     sudoku4.gameFrame.visible = false
   }
 
+  /**
+   * Reading the input sudoku file and testing if the sudoku was correctly converted
+   */
   @Test def `reading sudoku from file`: Unit =
     new SudokuTableExamples {
       assertEquals(0, sudoku1.sudokuTable(0)(0)._1)
@@ -31,6 +34,9 @@ class SudokuTests {
       assertEquals(0, sudoku3.sudokuTable(8)(8)._1)
     }
 
+  /**
+   * Testing if the starting position is at the right place
+   */
   @Test def `start position check`: Unit =
     new SudokuTableExamples {
       assertEquals((5,4), sudoku1.positions.startingPosition)
@@ -38,6 +44,9 @@ class SudokuTests {
       assertEquals((0,6), sudoku3.positions.startingPosition)
     }
 
+  /**
+   * Testing functionality of inputting a number on board on a legal spot
+   */
   @Test def `correctly input number`: Unit =
     new SudokuTableExamples {
       assertEquals(GameLookConstants.CODE_OK, insertNumberOnBoard(2,6,5, sudoku1.sudokuTable))
@@ -45,6 +54,9 @@ class SudokuTests {
       assertEquals(GameLookConstants.CODE_OK, insertNumberOnBoard(8,8,4, sudoku3.sudokuTable))
     }
 
+  /**
+   * Testing functionality of inputting a number on top of an another user number
+   */
   @Test def `override number`: Unit =
     new SudokuTableExamples {
       //Inputting a number twice in a row
@@ -56,12 +68,18 @@ class SudokuTests {
       }
     }
 
+  /**
+   * Testing functionality of inputting a number on board on a semi - legal spot
+   */
   @Test def `input number with warning`: Unit =
     new SudokuTableExamples {
       assertEquals(GameLookConstants.CODE_WARNING, insertNumberOnBoard(0,0,5, sudoku1.sudokuTable))
       assertEquals(5, sudoku1.sudokuTable(0)(0)._1)
     }
 
+  /**
+   * Testing functionality of inputting a number on board on an illegal spot
+   */
   @Test def `input number with error`: Unit =
     new SudokuTableExamples {
       assertEquals(GameLookConstants.CODE_ERROR, insertNumberOnBoard(1,0,3, sudoku1.sudokuTable))
@@ -69,6 +87,9 @@ class SudokuTests {
       assertEquals(GameLookConstants.CODE_ERROR, insertNumberOnBoard(1,1,3, sudoku1.sudokuTable))
     }
 
+  /**
+   * Testing functionality of erasing a legal number (user inputted)
+   */
   @Test def `correctly erase number`: Unit =
     new SudokuTableExamples {
       //Inserting a number in sudoku1 and erasing it
@@ -82,6 +103,9 @@ class SudokuTests {
       assertEquals(0, sudoku3.sudokuTable(0)(0)._1)
     }
 
+  /**
+   * Testing functionality of erasing an original board number
+   */
   @Test def `erase number with error`: Unit =
     new SudokuTableExamples {
       assertEquals(GameLookConstants.CODE_ERROR, eraseNumberFromBoard(0,3,sudoku1.sudokuTable))
@@ -91,6 +115,9 @@ class SudokuTests {
       assertEquals(1, sudoku2.sudokuTable(0)(0)._1)
     }
 
+  /**
+   * Testing functionality of executing instructions read from a file
+   */
   @Test def `instructions from file`: Unit =
     new SudokuTableExamples {
       assertEquals(0, sudoku3.sudokuTable(6)(3)._1)
@@ -107,6 +134,9 @@ class SudokuTests {
       assertEquals(7, sudoku3.sudokuTable(6)(2)._1)
     }
 
+  /**
+   * Testing functionality of checking to see if user input follows the rules of the game
+   */
   @Test def `move correct`: Unit =
     new SudokuTableExamples {
       assertEquals(true, checkIfMoveCorrect(2, 6, 5, getMatrixOfValue(sudoku1.sudokuTable)))
@@ -124,6 +154,9 @@ class SudokuTests {
       assertEquals(false, checkIfMoveCorrect(1,3, 2, getMatrixOfValue(sudoku3.sudokuTable)))
     }
 
+  /**
+   * Testing functionality checking to see if the sudoku board is completely filled
+   */
   @Test def `board completed`: Unit =
     new SudokuTableExamples {
       assertEquals(false, checkIfSudokuFinished(getMatrixOfValue(sudoku1.sudokuTable)))
@@ -132,6 +165,9 @@ class SudokuTests {
       assertEquals(true, checkIfSudokuFinished(getMatrixOfValue(sudoku2.sudokuTable)))
     }
 
+  /**
+   * Testing functionality of checking to see if the completely filled sudoku board is correct (follows the rules of the game)
+   */
   @Test def `board correctly filled`: Unit =
     new SudokuTableExamples {
       insertNumberOnBoard(8,8,8, sudoku2.sudokuTable)

@@ -1,26 +1,26 @@
 [info] Test run started
 [info] Test Sudoku.SudokuTests.correctly erase number started
-[debug] Test Sudoku.SudokuTests.correctly erase number finished, took 1.478 sec
+[debug] Test Sudoku.SudokuTests.correctly erase number finished, took 0.85 sec
 [info] Test Sudoku.SudokuTests.input number with error started
-[debug] Test Sudoku.SudokuTests.input number with error finished, took 0.569 sec
+[debug] Test Sudoku.SudokuTests.input number with error finished, took 0.734 sec
 [info] Test Sudoku.SudokuTests.board completed started
-[debug] Test Sudoku.SudokuTests.board completed finished, took 0.671 sec
+[debug] Test Sudoku.SudokuTests.board completed finished, took 0.518 sec
 [info] Test Sudoku.SudokuTests.start position check started
-[debug] Test Sudoku.SudokuTests.start position check finished, took 0.44 sec
+[debug] Test Sudoku.SudokuTests.start position check finished, took 0.485 sec
 [info] Test Sudoku.SudokuTests.override number started
-[debug] Test Sudoku.SudokuTests.override number finished, took 0.626 sec
+[debug] Test Sudoku.SudokuTests.override number finished, took 0.402 sec
 [info] Test Sudoku.SudokuTests.input number with warning started
-[debug] Test Sudoku.SudokuTests.input number with warning finished, took 0.623 sec
+[debug] Test Sudoku.SudokuTests.input number with warning finished, took 0.471 sec
 [info] Test Sudoku.SudokuTests.move correct started
-[debug] Test Sudoku.SudokuTests.move correct finished, took 0.409 sec
+[debug] Test Sudoku.SudokuTests.move correct finished, took 0.462 sec
 [info] Test Sudoku.SudokuTests.instructions from file started
-[debug] Test Sudoku.SudokuTests.instructions from file finished, took 0.591 sec
+[debug] Test Sudoku.SudokuTests.instructions from file finished, took 0.404 sec
 [info] Test Sudoku.SudokuTests.reading sudoku from file started
-[debug] Test Sudoku.SudokuTests.reading sudoku from file finished, took 0.769 sec
+[debug] Test Sudoku.SudokuTests.reading sudoku from file finished, took 0.437 sec
 [info] Test Sudoku.SudokuTests.erase number with error started
-[debug] Test Sudoku.SudokuTests.erase number with error finished, took 1.96 sec
+[debug] Test Sudoku.SudokuTests.erase number with error finished, took 0.336 sec
 [info] Test Sudoku.SudokuTests.correctly input number started
-[debug] Test Sudoku.SudokuTests.correctly input number finished, took 1.504 sec
+[debug] Test Sudoku.SudokuTests.correctly input number finished, took 0.438 sec
 [info] Test Sudoku.SudokuTests.board correctly filled started
-[debug] Test Sudoku.SudokuTests.board correctly filled finished, took 1.272 sec
-[info] Test run finished: 0 failed, 0 ignored, 12 total, 11.059s
+[debug] Test Sudoku.SudokuTests.board correctly filled finished, took 0.277 sec
+[info] Test run finished: 0 failed, 0 ignored, 12 total, 5.841s

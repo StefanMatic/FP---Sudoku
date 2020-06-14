@@ -175,7 +175,6 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
     }
   }
 
-
   /**
    * Transposition the sudoku board
    */
@@ -593,21 +592,33 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
 
   //-------------------------------- GUI Actions -------------------------------
 
+  /**
+   * Moving single step up on board
+   */
   def moveSingleStepUp: Unit = {
     val pos: Positions = positions.moveCurrentPositionUp
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
   }
 
+  /**
+   * Moving single step down on board
+   */
   def moveSingleStepDown: Unit = {
     val pos: Positions = positions.moveCurrentPositionDown
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
   }
 
+  /**
+   * Moving single step right on board
+   */
   def moveSingleStepRight: Unit = {
     val pos: Positions = positions.moveCurrentPositionRight
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
   }
 
+  /**
+   * Moving single step left on board
+   */
   def moveSingleStepLeft: Unit = {
     val pos: Positions = positions.moveCurrentPositionLeft
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, newSudokuBoard)
@@ -802,6 +813,9 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
     newSudokuBoard.dispose()
   }
 
+  /**
+   * Displaying a dialog to signal the user that the custom function has been added to the function list
+   */
   def addedFunctionMessage:Unit = {
     Dialog.showMessage(newSudokuBoard.contents.head, "Function added!", title="New function")
     transposition

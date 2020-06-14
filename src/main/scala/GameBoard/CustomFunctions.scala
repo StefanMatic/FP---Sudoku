@@ -22,7 +22,7 @@ class CustomFunctions(changeSudokuBoard: ChangeSudokuBoard) {
   }
 
   /**
-   * Adding a new cusom made function
+   * Adding a new custom made function
    *
    * @param name
    * @param newFunctions
@@ -33,10 +33,18 @@ class CustomFunctions(changeSudokuBoard: ChangeSudokuBoard) {
     functions = Nil
   }
 
+  /**
+   * Adding a function to the list of selected functions for further custom functions
+   *
+   * @param func
+   */
   def addFunctions(func: List[FunctionWrapper]): Unit = {
     functions = functions::: func
   }
 
+  /**
+   * User canceled the process of making a new custom function, so the list of currently selected functions is erased
+   */
   def noFunction: Unit = {
     functions = Nil
   }

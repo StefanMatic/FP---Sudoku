@@ -1,1 +1,34 @@
-[debug] No changes
+[debug] 
+[debug] Initial source changes: 
+[debug] 	removed:Set()
+[debug] 	added: Set()
+[debug] 	modified: Set(C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\SudokuBoard.scala)
+[debug] Invalidated products: Set(C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\ChangeSudokuBoard.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\SudokuBoard.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\package$.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\SudokuBoard$$anon$1.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\ChangeSudokuBoard$$anon$2.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\SudokuBoard$$anon$2.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\package.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\CustomFunctions.class, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes\GameBoard\ChangeSudokuBoard$$anon$1.class)
+[debug] External API changes: API Changes: Set()
+[debug] Modified binary dependencies: Set()
+[debug] Initial directly invalidated classes: Set(GameBoard.SudokuBoard)
+[debug] 
+[debug] Sources indirectly invalidated by:
+[debug] 	product: Set(C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\package.scala, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\CustomFunctions.scala, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\ChangeSudokuBoard.scala, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\SudokuBoard.scala)
+[debug] 	binary dep: Set()
+[debug] 	external source: Set()
+[debug] All initially invalidated classes: Set(GameBoard.SudokuBoard)
+[debug] All initially invalidated sources:Set(C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\SudokuBoard.scala, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\package.scala, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\CustomFunctions.scala, C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\src\main\scala\GameBoard\ChangeSudokuBoard.scala)
+[debug] Initial set of included nodes: GameBoard.SudokuBoard
+[info] Compiling 4 Scala sources to C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes ...
+[debug] Getting org.scala-sbt:compiler-bridge_2.13:1.3.5:compile for Scala 2.13.2
+[debug] Getting org.scala-sbt:compiler-bridge_2.13:1.3.5:compile for Scala 2.13.2
+[debug] [zinc] Running cached compiler 73b3b9b6 for Scala compiler version 2.13.2
+[debug] [zinc] The Scala compiler is invoked with:
+[debug] 	-bootclasspath
+[debug] 	C:\Program Files\Java\jdk1.8.0_191\jre\lib\resources.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\rt.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\sunrsasign.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\jsse.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\jce.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\charsets.jar;C:\Program Files\Java\jdk1.8.0_191\jre\lib\jfr.jar;C:\Program Files\Java\jdk1.8.0_191\jre\classes;C:\Users\LENOVO\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\scala-library\2.13.2\scala-library-2.13.2.jar
+[debug] 	-classpath
+[debug] 	C:\Users\LENOVO\Documents\Faks\Master studije\Funkcionalno programiranje\FP---Sudoku\target\scala-2.13\classes;C:\Users\LENOVO\AppData\Local\Coursier\cache\v1\https\repo1.maven.org\maven2\org\scala-lang\modules\scala-swing_2.13\2.1.1\scala-swing_2.13-2.1.1.jar
+[debug] Scala compilation took 2.2704838 s
+[info] Done compiling.
+[debug] New invalidations:
+[debug] 	Set()
+[debug] Initial set of included nodes: 
+[debug] Previously invalidated, but (transitively) depend on new invalidations:
+[debug] 	Set()
+[debug] No classes were invalidated.

@@ -17,6 +17,9 @@ class ChangeSudokuTests {
     sudoku4.newSudokuBoard.visible = false
   }
 
+  /**
+   * Testing functionality of erasing a number from the board
+   */
   @Test def `erase number from board`: Unit =
     new ChangeSudokuExamples {
       assertEquals(5, sudoku1.sudokuTable(0)(2)._1)
@@ -26,6 +29,9 @@ class ChangeSudokuTests {
       assertEquals(0, sudoku1.sudokuTable(0)(2)._1)
     }
 
+  /**
+   * Testing functionality of inputting a number on the board
+   */
   @Test def `input number on board`: Unit =
     new ChangeSudokuExamples {
       assertEquals(0, sudoku1.sudokuTable(0)(0)._1)
@@ -41,6 +47,9 @@ class ChangeSudokuTests {
       assertEquals(5, sudoku1.sudokuTable(1)(0)._1)
     }
 
+  /**
+   * Testing functionality of changing the starting position of game
+   */
   @Test def `change start position`: Unit =
     new ChangeSudokuExamples {
       assertEquals((8,8), sudoku2.positions.startingPosition)
@@ -49,7 +58,10 @@ class ChangeSudokuTests {
       assertEquals((1,1), sudoku2.positions.startingPosition)
     }
 
-  @Test def `trasposition`: Unit =
+  /**
+   * Testing functionality of transposition of the sudoku table
+   */
+  @Test def `transposition`: Unit =
     new ChangeSudokuExamples {
       assertEquals(1, sudoku4.sudokuTable(0)(0)._1)
       assertEquals(2, sudoku4.sudokuTable(0)(1)._1)
@@ -74,6 +86,9 @@ class ChangeSudokuTests {
       assertEquals(1, sudoku4.sudokuTable(0)(8)._1)
     }
 
+  /**
+   * Testing functionality of changing up the sudoku field values
+   */
   @Test def `changeUp`: Unit =
     new ChangeSudokuExamples {
       assertEquals(1, sudoku4.sudokuTable(0)(0)._1)
@@ -99,6 +114,9 @@ class ChangeSudokuTests {
       assertEquals(0, sudoku4.sudokuTable(0)(8)._1)
     }
 
+  /**
+   * Testing functionality of filtering selected row and column
+   */
   @Test def  `filter row and column`: Unit =
     new ChangeSudokuExamples {
       assertEquals(2, sudoku3.sudokuTable(1)(4)._1)
@@ -114,6 +132,9 @@ class ChangeSudokuTests {
       assertEquals(0, sudoku3.sudokuTable(5)(3)._1)
     }
 
+  /**
+   * Testing functionality of filtering selected square
+   */
   @Test def  `filter square`: Unit =
     new ChangeSudokuExamples {
       assertEquals(2, sudoku3.sudokuTable(0)(4)._1)
@@ -127,6 +148,9 @@ class ChangeSudokuTests {
       assertEquals(0, sudoku3.sudokuTable(1)(4)._1)
     }
 
+  /**
+   * Testing functionality of checking if the current sudoku table is solvable
+   */
   @Test def `sudoku solvable`: Unit = {
     new ChangeSudokuExamples {
       assertEquals(true, sudoku1.solveSudoku)
@@ -135,6 +159,9 @@ class ChangeSudokuTests {
   }
 
   /*
+  /**
+   * Testing functionality making a composite function
+   */
   @Test def `composite functions`: Unit =
     new ChangeSudokuExamples {
       assertEquals(2, sudoku3.sudokuTable(0)(4)._1)
@@ -155,6 +182,7 @@ class ChangeSudokuTests {
       assertEquals(0, sudoku3.sudokuTable(1)(6)._1)
       assertEquals(0, sudoku3.sudokuTable(5)(3)._1)
     }
+
    */
 
   @Rule def individualTestTimeout = new org.junit.rules.Timeout(10 * 1000)

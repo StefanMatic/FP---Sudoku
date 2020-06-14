@@ -34,13 +34,18 @@ class SudokuBoard(path: String, mainOwner: Frame) {
     myGameFrame
   }
 
+  /**
+   * Setter for FinishedGame
+   *
+   * @param mainOwner
+   * @return
+   */
   def setFinishGame(mainOwner: Frame): FinishedGameFrame = {
     val finishedGame = new GUI.FinishedGameFrame(gameFrame.mainOwner, gameFrame, this)
     finishedGame.visible = false
 
     finishedGame
   }
-
 
   //-------------------------------- Actions -----------------------------------
 
@@ -85,6 +90,9 @@ class SudokuBoard(path: String, mainOwner: Frame) {
         }
         case x :: xs if (x >= '1' && x <= '9')=>{
           inputNumber(x.asDigit)
+          goThroughChars(xs)
+        }
+        case x :: xs => {
           goThroughChars(xs)
         }
         case Nil =>
@@ -265,7 +273,7 @@ class SudokuBoard(path: String, mainOwner: Frame) {
         }
         else {
           //Write a message to user
-          gameFrame.messageOutput.append("THERE IS A MISTAKE! THE SUDOKU CANNOT BE SALVED!" + '\n')
+          gameFrame.messageOutput.append("THERE IS A MISTAKE! THE SUDOKU CANNOT BE SOLVED!" + '\n')
           false
         }
       } else
@@ -277,21 +285,33 @@ class SudokuBoard(path: String, mainOwner: Frame) {
 
   //-------------------------------- GUI Actions -------------------------------
 
+  /**
+   * Moving single step up on board
+   */
   def moveSingleStepUp: Unit = {
     val pos: Positions = positions.moveCurrentPositionUp
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
   }
 
+  /**
+   * Moving single step down on board
+   */
   def moveSingleStepDown: Unit = {
     val pos: Positions = positions.moveCurrentPositionDown
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
   }
 
+  /**
+   * Moving single step right on board
+   */
   def moveSingleStepRight: Unit = {
     val pos: Positions = positions.moveCurrentPositionRight
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
   }
 
+  /**
+   * Moving single step left on board
+   */
   def moveSingleStepLeft: Unit = {
     val pos: Positions = positions.moveCurrentPositionLeft
     callPositionChange(pos.currentPosition._1, pos.currentPosition._2, gameFrame)
