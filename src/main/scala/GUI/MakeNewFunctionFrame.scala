@@ -9,8 +9,8 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
   type FunctionWrapper = ((Int, Int)) => (Int, Int)
 
   val messageBoard: TextArea = new TextArea()
-  val saveFunction: Button = makeButtons("SAVE")
-  val closeFrame: Button = makeButtons("CLOSE")
+  val saveFunction: Button = makeButtons("SAVE", 100, 50)
+  val closeFrame: Button = makeButtons("CLOSE", 100, 50)
   val functionName: TextField = new TextField()
 
   //------------------- Functionality ---------------------
@@ -44,8 +44,13 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
    * @param name
    * @return
    */
-  def makeButtons(name: String): Button = {
+  def makeButtons(name: String, buttonWidth: Int, buttonHeight: Int): Button = {
     val myButton = new Button(name)
+    val buttonSize = new Dimension(buttonWidth, buttonHeight)
+
+    myButton.preferredSize = buttonSize
+    myButton.minimumSize = buttonSize
+    myButton.maximumSize = buttonSize
 
     myButton.xLayoutAlignment = 0.5f
     myButton.margin = new Insets(15, 15, 15, 15)
@@ -136,7 +141,7 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
       if (!sequence) {
         //Skipping over all sequence function when in COMPOSITE MODE
         if (func._2.length == 1){
-          val newButton = makeButtons(func._1.toUpperCase)
+          val newButton = makeButtons(func._1.toUpperCase, 400, 50)
 
           boxPanel.contents += Swing.VStrut(10)
           boxPanel.contents += newButton
@@ -150,7 +155,7 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
         }
       } else {
         // When in sequence mode it all functions come into consideration
-        val newButton = makeButtons(func._1.toUpperCase)
+        val newButton = makeButtons(func._1.toUpperCase, 400, 50)
 
         boxPanel.contents += Swing.VStrut(10)
         boxPanel.contents += newButton
@@ -181,6 +186,12 @@ class MakeNewFunctionFrame(sequence: Boolean, changeSudokuBoard: ChangeSudokuBoa
     val nameLabel = new Label("Function name:")
     nameLabel.font = GameLookConstants.MENU_TITLE_FONT
     nameLabel.yLayoutAlignment = 0.5f
+
+    //Setting the function name appearance
+    val functionNameDimension: Dimension = new Dimension(600,50)
+    functionName.preferredSize = functionNameDimension
+    functionName.maximumSize = functionNameDimension
+    functionName.minimumSize = functionNameDimension
 
     functionName.font = GameLookConstants.MENU_TITLE_FONT
     functionName.foreground = GameLookConstants.MENU_TITLE

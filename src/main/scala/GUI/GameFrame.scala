@@ -273,6 +273,11 @@ class GameFrame(val mainOwner: Frame, sudokuBoard: SudokuBoard) extends Frame {
   def functionsPanel: BoxPanel = {
     def makeFunctionNumber(name: String): Button = {
       val myButton = new Button(name)
+      val buttonSize = new Dimension(150, 50)
+
+      myButton.preferredSize = buttonSize
+      myButton.minimumSize = buttonSize
+      myButton.maximumSize = buttonSize
 
       myButton.xLayoutAlignment = 0.5f
       myButton.yLayoutAlignment = 0.5f

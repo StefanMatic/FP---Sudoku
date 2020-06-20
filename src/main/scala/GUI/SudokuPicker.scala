@@ -25,6 +25,7 @@ class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends 
     val allSudokuBoards = new java.io.File("src/SudokuBoardExamples").listFiles.filter(_.getName.endsWith(".txt"))
     for (f <- allSudokuBoards){
       val newButton = new Button(f.getName)
+      val buttonSize = new Dimension(300, 50)
 
       newButton.xLayoutAlignment = 0.5f
       newButton.margin = new Insets(15, 15, 15, 15)
@@ -43,6 +44,10 @@ class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends 
         }
       }
 
+      newButton.preferredSize = buttonSize
+      newButton.minimumSize = buttonSize
+      newButton.maximumSize = buttonSize
+
       boxPanel.contents += Swing.VStrut(20)
       boxPanel.contents += newButton
     }
@@ -50,7 +55,7 @@ class SudokuPicker(private val mainOwner: Frame, val gameMode: Boolean) extends 
 
   makeSudokuPickButtons
   boxPanel.background = GameLookConstants.GAME_BACKGROUND
-  boxPanel.border = Swing.EmptyBorder(150, 100, 150, 100)
+  boxPanel.border = Swing.EmptyBorder(150, 50, 150, 50)
   boxPanel.xLayoutAlignment = 0.5f
 
   title = "Pick difficulty"

@@ -196,7 +196,7 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
   def changeUp: Unit = {
     val manipulatedBoard = sudokuTable.map(col => col.map(el =>
       if (el._1 != 0)
-        (9 - el._1, el._2)
+        (10 - el._1, el._2)
       else
         el))
     manipulatedBoard.copyToArray(sudokuTable)
@@ -344,6 +344,8 @@ class ChangeSudokuBoard(path: String, mainOwner: Frame) {
       (row, col) match  {
         case (r, c) if (r == start._1 && c == start._2) => {
           bw.write("P")
+          if (c == 8)
+            bw.write('\n')
         }
         case (r, c) if (c == 8) => {
           writeElOfBoard(r, c)

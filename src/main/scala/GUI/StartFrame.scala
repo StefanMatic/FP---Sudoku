@@ -6,12 +6,18 @@ import scala.swing.event.ButtonClicked
 class StartFrame extends MainFrame {
   def makeButtons(name: String): Button = {
     val myButton = new Button(name)
+    val buttonSize = new Dimension(300, 50)
 
     myButton.xLayoutAlignment = 0.5f
     myButton.margin = new Insets(15, 15, 15, 15)
     myButton.background = GameLookConstants.MENU_BUTTON_BACKGROUND
     myButton.foreground = GameLookConstants.MENU_BUTTON_FOREGROUND
     myButton.font = GameLookConstants.MENU_BUTTON_FONT
+
+    myButton.preferredSize = buttonSize
+    myButton.minimumSize = buttonSize
+    myButton.maximumSize = buttonSize
+
     myButton
   }
 
@@ -41,7 +47,7 @@ class StartFrame extends MainFrame {
   boxPanel.contents += Swing.VStrut(20)
   boxPanel.contents += exitGame
 
-  boxPanel.border = Swing.EmptyBorder(150, 100, 150, 100)
+  boxPanel.border = Swing.EmptyBorder(150, 50, 150, 50)
   boxPanel.xLayoutAlignment = 0.5f
   boxPanel.background = GameLookConstants.GAME_BACKGROUND
 

@@ -8,15 +8,20 @@ import scala.swing._
 class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuBoard) extends Frame {
   val allSudokuFields  = Array.ofDim[Button](9,9)
   val messageOutput = new TextArea()
-  val saveSudoku = makeButtonNumbersFont("SAVE")
+  val saveSudoku = makeButtonNumbersFont("SAVE", 100, 50)
   val sudokuName = new TextField()
 
   val numPicker: BoxPanel = numberPicker
   val funcPanel: BoxPanel = functionsPanel
 
   //method for making uniform buttons with the predeclared NUMBER_FONT
-  def makeButtonNumbersFont(name: String): Button = {
+  def makeButtonNumbersFont(name: String, buttonWidth: Int, buttonHeight: Int): Button = {
     val myButton = new Button(name)
+    val buttonSize = new Dimension(buttonWidth, buttonHeight)
+
+    myButton.preferredSize = buttonSize
+    myButton.minimumSize = buttonSize
+    myButton.maximumSize = buttonSize
 
     myButton.xLayoutAlignment = 0.5f
     myButton.margin = new Insets(15, 15, 15, 15)
@@ -33,7 +38,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
    * @param func
    */
   def addFunction(name: String, func: List[((Int, Int))=>(Int, Int)]): Unit = {
-    val newButton = makeButtonNumbersFont(name.toUpperCase)
+    val newButton = makeButtonNumbersFont(name.toUpperCase, 300, 50)
     funcPanel.contents += Swing.VStrut(10)
     funcPanel.contents += newButton
 
@@ -174,17 +179,19 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
    */
   def numberPicker: BoxPanel = {
     val boxPanel = new BoxPanel(Orientation.Vertical)
+    val buttonWidth = 20
+    val buttonHeight = 50
 
-    val numberOne: Button = makeButtonNumbersFont("1")
-    val numberTwo: Button = makeButtonNumbersFont("2")
-    val numberThree: Button = makeButtonNumbersFont("3")
-    val numberFour: Button = makeButtonNumbersFont("4")
-    val numberFive: Button = makeButtonNumbersFont("5")
-    val numberSix: Button = makeButtonNumbersFont("6")
-    val numberSeven: Button = makeButtonNumbersFont("7")
-    val numberEight: Button = makeButtonNumbersFont("8")
-    val numberNine: Button = makeButtonNumbersFont("9")
-    // val erase: Button = makeButtonNumbersFont("  ")
+    val numberOne: Button = makeButtonNumbersFont("1", buttonWidth, buttonHeight)
+    val numberTwo: Button = makeButtonNumbersFont("2", buttonWidth, buttonHeight)
+    val numberThree: Button = makeButtonNumbersFont("3", buttonWidth, buttonHeight)
+    val numberFour: Button = makeButtonNumbersFont("4", buttonWidth, buttonHeight)
+    val numberFive: Button = makeButtonNumbersFont("5", buttonWidth, buttonHeight)
+    val numberSix: Button = makeButtonNumbersFont("6", buttonWidth, buttonHeight)
+    val numberSeven: Button = makeButtonNumbersFont("7", buttonWidth, buttonHeight)
+    val numberEight: Button = makeButtonNumbersFont("8", buttonWidth, buttonHeight)
+    val numberNine: Button = makeButtonNumbersFont("9", buttonWidth, buttonHeight)
+    // val erase: Button = makeButtonNumbersFont("  ", buttonWidth, buttonHeight)
 
     // boxPanel.contents += erase
     boxPanel.contents += Swing.VStrut(10)
@@ -240,7 +247,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
   def messageOutputAndExit : BoxPanel = {
     val boxPanel = new BoxPanel(Orientation.Horizontal)
 
-    val closeButton = makeButtonNumbersFont("Close")
+    val closeButton = makeButtonNumbersFont("Close", 100, 50)
 
     listenTo(closeButton)
     reactions += {
@@ -272,9 +279,11 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
   def functionsPanel: BoxPanel = {
 
     val boxPanel = new BoxPanel(Orientation.Vertical)
+    val buttonWidth: Int = 300
+    val buttonHeight: Int = 50
 
     for (func <- changeSudokuBoard.userFunctions.functionList) {
-      val newButton = makeButtonNumbersFont(func._1.toUpperCase)
+      val newButton = makeButtonNumbersFont(func._1.toUpperCase, buttonWidth, buttonHeight)
 
       boxPanel.contents += Swing.VStrut(10)
       boxPanel.contents += newButton
@@ -349,8 +358,8 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
 
     val funcChoose = new Label("Make new function:")
     funcChoose.font = GameLookConstants.MENU_TITLE_FONT
-    val compositeFunction = makeButtonNumbersFont("Composite")
-    val sequenceFunction = makeButtonNumbersFont("Sequence")
+    val compositeFunction = makeButtonNumbersFont("Composite", 150, 50)
+    val sequenceFunction = makeButtonNumbersFont("Sequence", 150, 50)
 
     boxPanel.contents += Swing.HStrut(10)
     boxPanel.contents += funcChoose
@@ -402,7 +411,7 @@ class NewSudokuBoardFrame(val mainOwner: Frame, changeSudokuBoard: ChangeSudokuB
 
   //last attribute touch-up
   visible = true
-  resizable = true
+  resizable = false
   peer.setLocationRelativeTo(null)
   size = new Dimension(1000, 1000)
 }
